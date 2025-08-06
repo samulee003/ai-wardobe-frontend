@@ -1,0 +1,55 @@
+{
+  "short_name": "智能衣櫃",
+  "name": "智能衣櫃管理APP",
+  "description": "專為ADHD用戶設計的AI衣物管理系統",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "productivity", "utilities"],
+  "lang": "zh-TW",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "上傳衣物",
+      "short_name": "上傳",
+      "description": "快速上傳新衣物",
+      "url": "/upload",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "穿搭推薦",
+      "short_name": "推薦",
+      "description": "獲取AI穿搭建議",
+      "url": "/outfits",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "我的衣櫃",
+      "short_name": "衣櫃",
+      "description": "查看衣物收藏",
+      "url": "/wardrobe",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    }
+  ]
+}
