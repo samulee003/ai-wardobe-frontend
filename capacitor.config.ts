@@ -1,0 +1,30 @@
+import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.smartwardrobe.app',
+  appName: '智能衣櫥',
+  webDir: 'build',
+  server: {
+    androidScheme: 'https'
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true
+  },
+  plugins: {
+    Camera: {
+      permissions: ['camera', 'photos']
+    },
+    Storage: {
+      group: 'SmartWardrobeGroup'
+    },
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#4f46e5',
+      showSpinner: false
+    }
+  }
+};
+
+export default config;

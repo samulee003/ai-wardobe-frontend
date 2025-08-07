@@ -17,6 +17,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ADHDModeToggle from './components/ADHDModeToggle';
 import SyncStatus from './components/SyncStatus';
 import ToastProvider from './components/Toast';
+import UpdateNotification from './components/UpdateNotification';
 
 import './App.css';
 
@@ -44,6 +45,7 @@ function App() {
             </main>
             <ADHDModeToggle />
             <SyncStatus />
+            <UpdateNotification />
           </ErrorBoundary>
           <ToastProvider />
           <ToastContainer
