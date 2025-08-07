@@ -20,13 +20,17 @@
     "@capacitor/cli": "^5.5.1",
     "@capacitor/android": "^5.5.1",
     "@capacitor/camera": "^5.0.7",
-    "@capacitor/storage": "^1.2.5"
+    "@capacitor/preferences": "^5.0.7"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "ci:install": "npm ci --legacy-peer-deps",
+    "build:android": "npm run build && npx cap sync && npx cap build android",
+    "cap:sync": "npx cap sync",
+    "cap:add:android": "npx cap add android"
   },
   "eslintConfig": {
     "extends": [
