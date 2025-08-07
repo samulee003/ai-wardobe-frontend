@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
     Camera: {
       permissions: ['camera', 'photos']
     },
-    Storage: {
+    Preferences: {
       group: 'SmartWardrobeGroup'
     },
     SplashScreen: {
