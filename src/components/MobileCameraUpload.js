@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
+import batchUploadService from '../services/batchUploadService';
 
 const MobileContainer = styled.div`
   width: 100%;
@@ -242,8 +243,15 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   
+  // 批量上傳相關狀態
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchFiles, setBatchFiles] = useState([]);
+  const [batchResults, setBatchResults] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const galleryMultipleInputRef = useRef(null);
 
   // 檢測是否為移動設備
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -303,7 +311,7 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     }
   };
 
-  // 處理文件選擇
+  // 處理單文件選擇
   const handleFileSelect = async (file) => {
     if (!file) return;
     
@@ -322,6 +330,76 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     } catch (error) {
       console.error('處理圖片錯誤:', error);
       toast.error('圖片處理失敗，請重試');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  // 處理批量文件選擇
+  const handleBatchFileSelect = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    setBatchMode(true);
+    setAnalyzing(true);
+    
+    const fileArray = Array.from(files);
+    const processedFiles = [];
+    
+    try {
+      for (let i = 0; i < Math.min(fileArray.length, 10); i++) {
+        const file = fileArray[i];
+        const compressedFile = await compressImageForMobile(file);
+        
+        processedFiles.push({
+          id: `batch-${Date.now()}-${i}`,
+          original: file,
+          compressed: compressedFile,
+          preview: URL.createObjectURL(compressedFile),
+          status: 'ready'
+        });
+      }
+      
+      setBatchFiles(processedFiles);
+      toast.success(`已準備 ${processedFiles.length} 張圖片，準備批量上傳`);
+      
+    } catch (error) {
+      console.error('批量處理圖片錯誤:', error);
+      toast.error('批量處理失敗，請重試');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  // 執行批量上傳 (使用統一服務層)
+  const executeBatchUpload = async () => {
+    if (batchFiles.length === 0) return;
+    
+    setAnalyzing(true);
+    
+    try {
+      const compressedFiles = batchFiles.map(fileData => fileData.compressed);
+      
+      const result = await batchUploadService.uploadBatch(compressedFiles, (progress) => {
+        // 移動端進度顯示
+        const progressPercent = Math.round(progress * 100);
+        setUploadProgress(progressPercent);
+        console.log(`上傳進度: ${progressPercent}%`);
+      });
+      
+      setBatchResults(result);
+      
+      toast.success(`🎉 批量上傳完成！成功: ${result.summary.success}/${result.summary.total}`);
+
+      // 回調給父組件
+      if (onUploadSuccess && result.results?.length > 0) {
+        result.results.forEach(uploadResult => {
+          onUploadSuccess(uploadResult.clothing);
+        });
+      }
+
+    } catch (error) {
+      console.error('批量上傳錯誤:', error);
+      toast.error(`批量上傳失敗: ${error.message}`);
     } finally {
       setAnalyzing(false);
     }
@@ -380,8 +458,13 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     setSelectedFile(null);
     setPreview(null);
     setAnalysisResult(null);
+    setBatchMode(false);
+    setBatchFiles([]);
+    setBatchResults(null);
+    setUploadProgress(0);
     if (cameraInputRef.current) cameraInputRef.current.value = '';
     if (galleryInputRef.current) galleryInputRef.current.value = '';
+    if (galleryMultipleInputRef.current) galleryMultipleInputRef.current.value = '';
   };
 
   // 重新分析
@@ -395,7 +478,7 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
 
   return (
     <MobileContainer>
-      {!preview ? (
+      {!preview && !batchMode ? (
         <>
           <CameraButton onClick={handleCamera}>
             <div className="icon">📷</div>
@@ -409,12 +492,119 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
               <div>從相冊選擇</div>
             </QuickButton>
             
-            <QuickButton onClick={() => toast.info('功能開發中')}>
+            <QuickButton onClick={() => galleryMultipleInputRef.current?.click()}>
               <div className="icon">📊</div>
               <div>批量上傳</div>
             </QuickButton>
           </QuickActions>
         </>
+      ) : batchMode ? (
+        <div>
+          <h3>📊 批量上傳模式</h3>
+          <p>已選擇 {batchFiles.length} 張圖片</p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', margin: '20px 0' }}>
+            {batchFiles.map((file, index) => (
+              <div key={file.id} style={{ textAlign: 'center' }}>
+                <img 
+                  src={file.preview} 
+                  alt={`批量圖片 ${index + 1}`}
+                  style={{ 
+                    width: '100%', 
+                    height: '80px', 
+                    objectFit: 'cover', 
+                    borderRadius: '8px',
+                    border: '2px solid #e9ecef'
+                  }}
+                />
+                <div style={{ fontSize: '10px', marginTop: '4px', color: '#666' }}>
+                  {file.original.name.length > 15 ? 
+                    file.original.name.substring(0, 12) + '...' : 
+                    file.original.name
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {analyzing && uploadProgress > 0 && (
+            <div style={{
+              width: '100%',
+              height: '8px',
+              background: '#e9ecef',
+              borderRadius: '4px',
+              margin: '15px 0',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${uploadProgress}%`,
+                height: '100%',
+                background: '#007bff',
+                borderRadius: '4px',
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+          )}
+
+          <ActionButtons>
+            <ActionButton className="primary" onClick={executeBatchUpload} disabled={analyzing}>
+              {analyzing ? `🚀 上傳中... ${uploadProgress}%` : `🚀 批量上傳 ${batchFiles.length} 張`}
+            </ActionButton>
+            <ActionButton className="secondary" onClick={handleReset}>
+              🔄 重新選擇
+            </ActionButton>
+          </ActionButtons>
+
+          {batchResults && (
+            <div style={{ 
+              background: '#f8f9fa', 
+              padding: '15px', 
+              borderRadius: '8px', 
+              marginTop: '15px',
+              border: '1px solid #e9ecef'
+            }}>
+              <h4>📊 上傳結果</h4>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(4, 1fr)', 
+                gap: '10px',
+                textAlign: 'center'
+              }}>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#007bff' }}>
+                    {batchResults.summary.total}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>總計</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#28a745' }}>
+                    {batchResults.summary.success}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>成功</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#dc3545' }}>
+                    {batchResults.summary.failed}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>失敗</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffc107' }}>
+                    {batchResults.summary.successRate}%
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>成功率</div>
+                </div>
+              </div>
+              <ActionButton 
+                className="primary" 
+                onClick={handleReset}
+                style={{ marginTop: '15px', width: '100%' }}
+              >
+                ✅ 完成
+              </ActionButton>
+            </div>
+          )}
+        </div>
       ) : (
         <PreviewSection show={true}>
           <PreviewImage src={preview} alt="預覽" />
@@ -484,6 +674,15 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
         type="file"
         accept="image/*"
         onChange={(e) => handleFileSelect(e.target.files[0])}
+        style={{ display: 'none' }}
+      />
+      
+      <input
+        ref={galleryMultipleInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => handleBatchFileSelect(e.target.files)}
         style={{ display: 'none' }}
       />
 
