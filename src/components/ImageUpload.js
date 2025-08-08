@@ -560,6 +560,23 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
           if (uploadResult.aiAnalysis) {
             analyticsService.trackAIProvider(uploadResult.aiAnalysis.aiService, uploadResult.aiAnalysis.latencyMs);
           }
+          // 檢查可能重複（相似度）
+          try {
+            const token = localStorage.getItem('token');
+            const similarResp = await fetch(`/api/clothes/${uploadResult.clothing._id}/similar`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (similarResp.ok) {
+              const similarData = await similarResp.json();
+              const top = (similarData.items || [])[0];
+              if (top && typeof top._score === 'number' && top._score >= 0.9) {
+                toast.warn(`可能重複：${fileData.originalName} 與既有衣物相似度 ${(top._score * 100).toFixed(0)}%`);
+              }
+            }
+          } catch (dupErr) {
+            // 靜默處理，不阻斷流程
+            console.debug('相似檢查失敗', dupErr);
+          }
         } else if (uploadError) {
           updateFileInQueue(fileIndex, { 
             status: 'error', 

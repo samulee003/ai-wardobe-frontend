@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import ADHDModeToggle from '../components/ADHDModeToggle';
 import QuickWearRecord from '../components/QuickWearRecord';
+import Button from '../components/ui/Button';
+import Card, { CardContent } from '../components/ui/Card';
 
 const Container = styled.div`
   max-width: ${props => props.adhdMode ? '800px' : '1200px'};
@@ -43,13 +45,11 @@ const QuickStats = styled.div`
   margin-bottom: 30px;
 `;
 
-const StatCard = styled.div`
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  text-align: center;
-`;
+const StatCard = ({ children }) => (
+  <Card className="text-center">
+    <CardContent>{children}</CardContent>
+  </Card>
+);
 
 const StatNumber = styled.div`
   font-size: 28px;
@@ -70,21 +70,15 @@ const QuickActions = styled.div`
   margin-bottom: 40px;
 `;
 
-const ActionCard = styled.div`
-  background: white;
-  padding: ${props => props.adhdMode ? '25px' : '30px'};
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  border: ${props => props.priority && props.adhdMode ? '3px solid #007bff' : 'none'};
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  }
-`;
+const ActionCard = ({ onClick, children, adhdMode, priority }) => (
+  <Card className={priority && adhdMode ? 'border-primary' : ''}>
+    <CardContent>
+      <div onClick={onClick} role="button">
+        {children}
+      </div>
+    </CardContent>
+  </Card>
+);
 
 const ActionIcon = styled.div`
   font-size: ${props => props.adhdMode ? '48px' : '64px'};
@@ -248,6 +242,11 @@ const Home = () => {
             <ActionDescription adhdMode={adhdMode}>
               {action.desc}
             </ActionDescription>
+            <div style={{ marginTop: 12 }}>
+              <Button variant="primary" size="lg" onClick={() => navigate(action.path)}>
+                立即前往
+              </Button>
+            </div>
           </ActionCard>
         ))}
       </QuickActions>

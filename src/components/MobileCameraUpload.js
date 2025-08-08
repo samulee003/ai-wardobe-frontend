@@ -401,6 +401,20 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
           if (r.aiAnalysis) {
             analyticsService.trackAIProvider(r.aiAnalysis.aiService, r.aiAnalysis.latencyMs);
           }
+          // 相似度去重提示
+          (async () => {
+            try {
+              const token = localStorage.getItem('token');
+              const resp = await fetch(`/api/clothes/${r.clothing._id}/similar`, { headers: { 'Authorization': `Bearer ${token}` } });
+              if (resp.ok) {
+                const data = await resp.json();
+                const top = (data.items || [])[0];
+                if (top && typeof top._score === 'number' && top._score >= 0.9) {
+                  toast.warn(`可能重複：與既有衣物相似度 ${(top._score * 100).toFixed(0)}%`);
+                }
+              }
+            } catch (_) {}
+          })();
         });
       }
       setStage('analyzing');
