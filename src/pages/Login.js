@@ -141,7 +141,8 @@ const Login = () => {
     adhd: false
   });
 
-  const { login, register } = useAuth();
+  // 無認證模式仍保留 useAuth 調用以取得 navigate 等，但不使用 login/register
+  const {} = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {

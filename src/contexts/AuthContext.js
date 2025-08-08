@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -13,9 +12,9 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({ id: 'guest', name: '訪客' });
+  const [user] = useState({ id: 'guest', name: '訪客' });
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token] = useState(localStorage.getItem('token'));
 
   // 設置axios默認headers
   useEffect(() => {
