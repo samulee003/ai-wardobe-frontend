@@ -256,7 +256,7 @@ const Login = () => {
         )}
 
         <Button type="submit" disabled={loading}>
-          {loading ? '處理中...' : (isLogin ? '登錄' : '註冊')}
+          {loading ? '處理中...' : '進入應用'}
         </Button>
       </Form>
 
