@@ -244,11 +244,7 @@ const Declutter = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      toast.error('請先登錄');
-      navigate('/login');
-      return;
-    }
+    // 無認證模式：不再跳轉登入
     fetchSuggestions();
   }, [isAuthenticated, navigate]);
 

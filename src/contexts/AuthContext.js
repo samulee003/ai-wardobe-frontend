@@ -13,7 +13,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({ id: 'guest', name: '訪客' });
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
@@ -28,20 +28,8 @@ export const AuthProvider = ({ children }) => {
 
   // 檢查用戶登錄狀態
   useEffect(() => {
-    const checkAuth = async () => {
-      if (token) {
-        try {
-          const response = await axios.get('/api/auth/profile');
-          setUser(response.data.user);
-        } catch (error) {
-          console.error('認證檢查失敗:', error);
-          logout();
-        }
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
+    // 離線/無認證模式：直接完成載入
+    setLoading(false);
   }, [token]);
 
   // 登錄
@@ -130,12 +118,12 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     loading,
-    login,
-    register,
-    logout,
-    updateProfile,
-    refreshToken,
-    isAuthenticated: !!user
+    login: async () => ({ success: true }),
+    register: async () => ({ success: true }),
+    logout: () => {},
+    updateProfile: async () => ({ success: true }),
+    refreshToken: async () => true,
+    isAuthenticated: true
   };
 
   return (

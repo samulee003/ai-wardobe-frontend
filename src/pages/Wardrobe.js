@@ -191,11 +191,7 @@ const Wardrobe = () => {
 
   // 檢查登錄狀態
   useEffect(() => {
-    if (!isAuthenticated) {
-      toast.error('請先登錄');
-      navigate('/login');
-      return;
-    }
+    // 無認證模式：不再跳轉登入
     fetchClothes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, filters, pagination.currentPage]);

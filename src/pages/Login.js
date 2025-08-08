@@ -157,26 +157,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      let result;
-      
-      if (isLogin) {
-        result = await login(formData.email, formData.password);
-      } else {
-        const registerData = {
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          profile: {
-            age: formData.age ? parseInt(formData.age) : null,
-            adhd: formData.adhd
-          }
-        };
-        result = await register(registerData);
-      }
-
-      if (result.success) {
-        navigate('/');
-      }
+      // 無認證模式：直接進入首頁
+      navigate('/');
     } catch (error) {
       console.error('認證錯誤:', error);
     } finally {
