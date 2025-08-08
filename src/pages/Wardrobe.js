@@ -180,7 +180,7 @@ const Wardrobe = () => {
     totalPages: 1,
     total: 0
   });
-  const [stats, setStats] = useState({
+  const [, setStats] = useState({
     total: 0,
     categories: {},
     recentlyAdded: 0
