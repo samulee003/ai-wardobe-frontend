@@ -64,75 +64,7 @@ const UploadButton = styled.button`
   }
 `;
 
-const PreviewContainer = styled.div`
-  margin-top: 20px;
-  text-align: center;
-`;
-
-const PreviewImage = styled.img`
-  max-width: 300px;
-  max-height: 300px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-`;
-
-const ProgressBar = styled.div`
-  width: 100%;
-  height: 4px;
-  background: #e9ecef;
-  border-radius: 2px;
-  margin: 15px 0;
-  overflow: hidden;
-  
-  &::after {
-    content: '';
-    display: block;
-    height: 100%;
-    background: #007bff;
-    width: ${props => props.progress}%;
-    transition: width 0.3s ease;
-  }
-`;
-
-const AnalysisResult = styled.div`
-  margin-top: 20px;
-  padding: 15px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  text-align: left;
-`;
-
-const ResultItem = styled.div`
-  margin-bottom: 10px;
-  
-  strong {
-    color: #333;
-  }
-  
-  span {
-    color: #666;
-    margin-left: 8px;
-  }
-`;
-
-const ConfidenceBar = styled.div`
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  margin: 5px 0;
-  
-  &::after {
-    content: '';
-    display: block;
-    height: 100%;
-    background: ${props => props.confidence > 0.8 ? '#28a745' : props.confidence > 0.6 ? '#ffc107' : '#dc3545'};
-    width: ${props => props.confidence * 100}%;
-    border-radius: 4px;
-    transition: width 0.3s ease;
-  }
-`;
+// 移除未使用的樣式元件以通過 CI 嚴格模式
 
 // 新增：批量上傳佇列相關組件
 const QueueContainer = styled.div`

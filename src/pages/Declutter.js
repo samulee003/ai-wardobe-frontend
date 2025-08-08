@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
-import ClothingCard from '../components/ClothingCard';
+// 移除未使用的匯入以通過 ESLint
 
 const Container = styled.div`
   max-width: 1200px;
@@ -302,6 +302,8 @@ const Declutter = () => {
             toast.success('衣物已淘汰');
             fetchSuggestions(); // 重新獲取建議
           }
+          break;
+        default:
           break;
       }
       

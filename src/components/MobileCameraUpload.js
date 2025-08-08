@@ -253,8 +253,7 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   const galleryInputRef = useRef(null);
   const galleryMultipleInputRef = useRef(null);
 
-  // 檢測是否為移動設備
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // 注意：僅在需要時再檢測是否為移動設備，避免未使用變數造成CI報錯
 
   // 壓縮圖片（移動端優化）
   const compressImageForMobile = (file) => {

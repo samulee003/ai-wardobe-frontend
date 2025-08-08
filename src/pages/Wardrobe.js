@@ -197,6 +197,7 @@ const Wardrobe = () => {
       return;
     }
     fetchClothes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, filters, pagination.currentPage]);
 
   // 獲取衣物列表

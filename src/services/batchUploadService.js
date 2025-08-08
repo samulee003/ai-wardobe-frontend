@@ -226,5 +226,7 @@ class BatchUploadService {
   }
 }
 
-// 導出單例
-export default new BatchUploadService();
+// 導出具名類別與單例，避免匿名 default export 規則報錯
+const batchUploadServiceInstance = new BatchUploadService();
+export default batchUploadServiceInstance;
+export { BatchUploadService };

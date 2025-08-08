@@ -123,6 +123,7 @@ const WearTrendChart = () => {
 
   useEffect(() => {
     fetchTrendData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod]);
 
   const fetchTrendData = async () => {
