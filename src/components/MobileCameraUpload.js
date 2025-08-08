@@ -1,7 +1,10 @@
+import ProgressIndicator from './ProgressIndicator';
+import BottomSheet from './BottomSheet';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import batchUploadService from '../services/batchUploadService';
+import analyticsService from '../services/analyticsService';
 
 const MobileContainer = styled.div`
   width: 100%;
@@ -248,6 +251,9 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   const [batchFiles, setBatchFiles] = useState([]);
   const [batchResults, setBatchResults] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [stage, setStage] = useState('idle'); // idle | compressing | uploading | analyzing | done
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const abortControllerRef = useRef(null);
   
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -340,6 +346,7 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     
     setBatchMode(true);
     setAnalyzing(true);
+    setStage('compressing');
     
     const fileArray = Array.from(files);
     const processedFiles = [];
@@ -374,6 +381,9 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     if (batchFiles.length === 0) return;
     
     setAnalyzing(true);
+    setSheetOpen(true);
+    setStage('uploading');
+    abortControllerRef.current = new AbortController();
     
     try {
       const compressedFiles = batchFiles.map(fileData => fileData.compressed);
@@ -383,10 +393,18 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
         const progressPercent = Math.round(progress * 100);
         setUploadProgress(progressPercent);
         console.log(`上傳進度: ${progressPercent}%`);
-      });
+      }, { timeoutMs: 20000, signal: abortControllerRef.current.signal });
       
       setBatchResults(result);
-      
+      if (result.results?.length) {
+        result.results.forEach(r => {
+          if (r.aiAnalysis) {
+            analyticsService.trackAIProvider(r.aiAnalysis.aiService, r.aiAnalysis.latencyMs);
+          }
+        });
+      }
+      setStage('analyzing');
+
       toast.success(`🎉 批量上傳完成！成功: ${result.summary.success}/${result.summary.total}`);
 
       // 回調給父組件
@@ -401,6 +419,8 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       toast.error(`批量上傳失敗: ${error.message}`);
     } finally {
       setAnalyzing(false);
+      abortControllerRef.current = null;
+      setStage('done');
     }
   };
 
@@ -526,24 +546,30 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             ))}
           </div>
 
-          {analyzing && uploadProgress > 0 && (
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: '#e9ecef',
-              borderRadius: '4px',
-              margin: '15px 0',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${uploadProgress}%`,
-                height: '100%',
-                background: '#007bff',
-                borderRadius: '4px',
-                transition: 'width 0.3s ease'
-              }} />
+      {(
+        <BottomSheet
+          open={sheetOpen}
+          title={analyzing ? (stage === 'compressing' ? '壓縮中' : stage === 'uploading' ? '上傳中' : 'AI 分析中') : '結果'}
+          onClose={() => setSheetOpen(false)}
+          actions={[
+            analyzing
+              ? { label: '取消上傳', onClick: () => { abortControllerRef.current?.abort(); setSheetOpen(false); }, variant: 'secondary' }
+              : { label: '完成', onClick: () => setSheetOpen(false), variant: 'primary' }
+          ]}
+        >
+          <ProgressIndicator label={stage === 'uploading' ? '上傳進度' : '處理進度'} percentage={uploadProgress} />
+          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 8 }}>
+            {stage === 'compressing' && '正在壓縮圖片以節省流量...'}
+            {stage === 'uploading' && '正在上傳圖片到伺服器...'}
+            {stage === 'analyzing' && '正在進行 AI 分析...'}
+          </div>
+          {batchResults && (
+            <div style={{ fontSize: 14, color: '#374151' }}>
+              成功 {batchResults.summary?.success} / {batchResults.summary?.total}
             </div>
           )}
+        </BottomSheet>
+      )}
 
           <ActionButtons>
             <ActionButton className="primary" onClick={executeBatchUpload} disabled={analyzing}>

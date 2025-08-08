@@ -33,6 +33,12 @@
     "cap:sync": "npx cap sync",
     "cap:add:android": "npx cap add android"
   },
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",

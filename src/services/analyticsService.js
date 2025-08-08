@@ -178,6 +178,13 @@ class AnalyticsService {
     });
   }
 
+  trackAIProvider(aiService, latencyMs) {
+    this.trackEvent('ai_provider', {
+      aiService,
+      latencyMs
+    });
+  }
+
   trackFeatureUsage(feature) {
     this.trackEvent('feature_usage', {
       feature, // 'wardrobe', 'outfits', 'statistics', etc.

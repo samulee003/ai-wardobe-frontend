@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,8 +20,14 @@ import ToastProvider from './components/Toast';
 import UpdateNotification from './components/UpdateNotification';
 
 import './App.css';
+import GlobalStyle from './styles/GlobalStyle';
+import FAB from './components/ui/FAB';
+import analyticsService from './services/analyticsService';
 
 function App() {
+  useEffect(() => {
+    analyticsService.initialize();
+  }, []);
   return (
     <AuthProvider>
       <Router>
@@ -43,10 +49,12 @@ function App() {
                 <Route path="/declutter" element={<Declutter />} />
               </Routes>
             </main>
+            <FAB onClick={() => window.location.assign('/upload')} />
             <ADHDModeToggle />
             <SyncStatus />
             <UpdateNotification />
           </ErrorBoundary>
+          <GlobalStyle />
           <ToastProvider />
           <ToastContainer
             position="top-right"

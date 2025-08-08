@@ -14,7 +14,8 @@ class BatchUploadService {
    * @param {Function} onProgress - 進度回調函數
    * @returns {Promise<Object>} 上傳結果
    */
-  async uploadBatch(files, onProgress = null) {
+  async uploadBatch(files, onProgress = null, options = {}) {
+    const { timeoutMs = 20000, signal } = options;
     if (!files || files.length === 0) {
       throw new Error('沒有可上傳的文件');
     }
@@ -53,6 +54,31 @@ class BatchUploadService {
           });
         }
         
+        // 支援取消
+        if (signal && typeof signal.addEventListener === 'function') {
+          const onAbort = () => {
+            try { xhr.abort(); } catch (_) {}
+            reject(new Error('已取消上傳'));
+          };
+          // 如果已經被取消
+          if (signal.aborted) {
+            onAbort();
+            return;
+          }
+          signal.addEventListener('abort', onAbort, { once: true });
+        }
+
+        const buildSuggestion = (status) => {
+          switch (status) {
+            case 400: return '請確認圖片格式與大小是否符合要求再試一次。';
+            case 401: return '登入可能已過期，請重新登入後重試。';
+            case 413: return '圖片過大，請選擇較小的圖片（<5MB）或降低畫質再傳。';
+            case 429: return '請求過於頻繁，稍候幾秒再試。';
+            case 500: return '伺服器忙碌，請稍候重試或回報問題。';
+            default: return '請稍後再試，若持續發生請回報問題。';
+          }
+        };
+
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
@@ -65,22 +91,22 @@ class BatchUploadService {
             // 處理HTTP錯誤狀態
             switch (xhr.status) {
               case 400:
-                reject(new Error('請求格式錯誤'));
+                reject(new Error(`請求格式錯誤。建議：${buildSuggestion(400)}`));
                 break;
               case 401:
-                reject(new Error('登錄已過期，請重新登錄'));
+                reject(new Error(`登錄已過期。建議：${buildSuggestion(401)}`));
                 break;
               case 413:
-                reject(new Error('文件過大，請選擇較小的圖片'));
+                reject(new Error(`文件過大。建議：${buildSuggestion(413)}`));
                 break;
               case 429:
-                reject(new Error('請求過於頻繁，請稍後重試'));
+                reject(new Error(`請求過於頻繁。建議：${buildSuggestion(429)}`));
                 break;
               case 500:
-                reject(new Error('服務器內部錯誤，請稍後重試'));
+                reject(new Error(`服務器內部錯誤。建議：${buildSuggestion(500)}`));
                 break;
               default:
-                reject(new Error(`上傳失敗: HTTP ${xhr.status}`));
+                reject(new Error(`上傳失敗: HTTP ${xhr.status}。建議：${buildSuggestion(xhr.status)}`));
             }
           }
         });
@@ -92,10 +118,14 @@ class BatchUploadService {
         xhr.addEventListener('timeout', () => {
           reject(new Error('請求超時，請重試'));
         });
+
+        xhr.addEventListener('abort', () => {
+          reject(new Error('已取消上傳'));
+        });
         
         xhr.open('POST', `${this.baseURL}/batch-upload`);
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        xhr.timeout = 300000; // 5分鐘超時
+        xhr.timeout = timeoutMs; // 預設 20 秒超時，可由參數覆蓋
         xhr.send(formData);
       });
 
@@ -123,7 +153,8 @@ class BatchUploadService {
    * @param {File} file - 單個文件
    * @returns {Promise<Object>} 上傳結果
    */
-  async uploadSingle(file) {
+  async uploadSingle(file, options = {}) {
+    const { signal } = options;
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -138,7 +169,8 @@ class BatchUploadService {
         headers: {
           'Authorization': `Bearer ${token}`
         },
-        body: formData
+        body: formData,
+        signal
       });
 
       if (!response.ok) {

@@ -2,7 +2,9 @@ import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import BatchUploadFeedback from './BatchUploadFeedback';
+import ProgressIndicator from './ProgressIndicator';
 import batchUploadService from '../services/batchUploadService';
+import analyticsService from '../services/analyticsService';
 
 const UploadContainer = styled.div`
   display: flex;
@@ -251,6 +253,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   // 新的批量上傳狀態管理
   const [fileQueue, setFileQueue] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const abortControllerRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -259,6 +262,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   const cameraInputRef = useRef(null);
 
   // 文件狀態：'pending', 'compressing', 'uploading', 'success', 'error'
+  // 新增：在批量結果後支援單檔重試
 
   // 壓縮圖片
   const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
@@ -441,7 +445,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     setFileQueue(prevQueue => prevQueue.filter((_, i) => i !== index));
   };
 
-  // 重試失敗的文件
+  // 重試失敗的文件（重新壓縮並單檔上傳）
   const retryFile = async (index) => {
     const fileData = fileQueue[index];
     if (!fileData) return;
@@ -459,10 +463,17 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
         progress: 100,
         compressedFile: compressedFile
       });
+
+      // 直接單檔上傳（可取消）
+      updateFileInQueue(index, { status: 'uploading', progress: 0 });
+      const controller = new AbortController();
+      const single = await batchUploadService.uploadSingle(compressedFile, { signal: controller.signal });
+      updateFileInQueue(index, { status: 'success', progress: 100, result: single });
+      toast.success('單檔重試成功');
     } catch (error) {
       updateFileInQueue(index, { 
         status: 'error', 
-        error: `壓縮失敗: ${error.message}` 
+        error: `重試失敗: ${error.message}` 
       });
     }
   };
@@ -500,6 +511,8 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     }
 
     setIsUploading(true);
+    // 建立取消控制器
+    abortControllerRef.current = new AbortController();
     setUploadResults(null);
 
     try {
@@ -528,7 +541,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             progress: Math.round(progress * 100) 
           });
         });
-      });
+      }, { timeoutMs: 20000, signal: abortControllerRef.current.signal });
       
       setUploadResults(result);
 
@@ -544,6 +557,9 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             progress: 100,
             result: uploadResult
           });
+          if (uploadResult.aiAnalysis) {
+            analyticsService.trackAIProvider(uploadResult.aiAnalysis.aiService, uploadResult.aiAnalysis.latencyMs);
+          }
         } else if (uploadError) {
           updateFileInQueue(fileIndex, { 
             status: 'error', 
@@ -603,6 +619,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       });
     } finally {
       setIsUploading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -620,6 +637,14 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     setShowFeedback(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
+  };
+
+  // 取消上傳
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      toast.warn('已取消批量上傳');
+    }
   };
 
   // 統計資料
@@ -680,6 +705,10 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       {fileQueue.length > 0 && (
         <QueueContainer>
           <h4>📋 上傳佇列 ({fileQueue.length} 張圖片)</h4>
+          <ProgressIndicator
+            steps={["壓縮", "上傳", "AI分析", "完成"]}
+            currentStep={isUploading ? 2 : (queueStats.compressing > 0 ? 1 : (queueStats.success > 0 ? 3 : 0))}
+          />
           
           {fileQueue.map((item, index) => (
             <QueueItem key={item.id} status={item.status}>
@@ -743,6 +772,11 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             >
               🗑️ 清空佇列
             </BatchButton>
+            {isUploading && (
+              <BatchButton className="secondary" onClick={handleCancelUpload}>
+                ⛔ 取消上傳
+              </BatchButton>
+            )}
           </BatchActions>
         </QueueContainer>
       )}
