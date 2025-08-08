@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="description" content="智能衣櫃管理APP - 幫助ADHD用戶整理衣物和穿搭建議" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- PWA優化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="智能衣櫃" />
+    
+    <!-- Capacitor優化 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <title>智能衣櫃 - AI衣物管理助手</title>
+    
+    <style>
+      /* 加載動畫 */
+      .loading-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loading-text {
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        font-size: 18px;
+        margin-top: 20px;
+        text-align: center;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* 隱藏加載動畫當React應用載入後 */
+      .app-loaded .loading-container {
+        display: none;
+      }
+      
+      /* 基礎樣式重置 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #f8fafc;
+      }
+      
+      code {
+        font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+          monospace;
+      }
+      
+      /* 響應式設計 */
+      @media (max-width: 768px) {
+        body {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>您需要啟用 JavaScript 才能運行此應用程式。</noscript>
+    
+    <!-- 加載動畫 -->
+    <div class="loading-container" id="loading-container">
+      <div style="text-align: center;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">
+          <div>🧥 智能衣櫃</div>
+          <div style="font-size: 14px; margin-top: 10px; opacity: 0.8;">正在加載您的衣物助手...</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- React根節點 -->
+    <div id="root"></div>
+    
+    <script>
+      // 隱藏加載動畫當React應用載入
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const loadingContainer = document.getElementById('loading-container');
+          if (loadingContainer) {
+            loadingContainer.style.opacity = '0';
+            loadingContainer.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(function() {
+              loadingContainer.style.display = 'none';
+              document.body.classList.add('app-loaded');
+            }, 500);
+          }
+        }, 1000); // 最少顯示1秒加載動畫
+      });
+      
+      // 錯誤處理
+      window.addEventListener('error', function(e) {
+        console.error('應用錯誤:', e.error);
+      });
+      
+      // 性能監控
+      if ('performance' in window) {
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            if (perfData) {
+              console.log('頁面加載時間:', Math.round(perfData.loadEventEnd - perfData.fetchStart), 'ms');
+            }
+          }, 0);
+        });
+      }
+    </script>
+  </body>
+</html>
