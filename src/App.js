@@ -10,6 +10,7 @@ import MobileUpload from './pages/MobileUpload';
 import Wardrobe from './pages/Wardrobe';
 import Outfits from './pages/Outfits';
 import Statistics from './pages/Statistics';
+import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Declutter from './pages/Declutter';
 import { AuthProvider } from './contexts/AuthContext';
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/wardrobe" element={<Wardrobe />} />
                 <Route path="/outfits" element={<Outfits />} />
                 <Route path="/statistics" element={<Statistics />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/declutter" element={<Declutter />} />
               </Routes>
             </main>

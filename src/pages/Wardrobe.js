@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import ClothingCard from '../components/ClothingCard';
 import { useAuth } from '../contexts/AuthContext';
+import { ClothingGridSkeleton } from '../components/SkeletonLoader';
+import localStorageService from '../services/localStorageService';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -198,63 +200,113 @@ const Wardrobe = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, filters, pagination.currentPage]);
 
-  // 獲取衣物列表
+  // 獲取衣物列表（優先本地，備用雲端）
   const fetchClothes = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
       // 自然語言搜尋優先
       if (nlMode && nlQuery.trim()) {
-        const resp = await fetch(`/api/clothes/search`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ q: nlQuery, limit: 24 })
-        });
-        if (!resp.ok) throw new Error('自然語言搜尋失敗');
-        const data = await resp.json();
-        setClothes(data.items || []);
-        setPagination(prev => ({ ...prev, totalPages: 1, total: (data.items||[]).length }));
-        setLoading(false);
-        return;
-      }
-
-      const queryParams = new URLSearchParams({
-        page: pagination.currentPage,
-        limit: 12,
-        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
-      });
-
-      const response = await fetch(`/api/clothes?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        try {
+          // 嘗試雲端搜尋
+          if (isAuthenticated) {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`/api/clothes/search`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ q: nlQuery, limit: 24 })
+            });
+            if (resp.ok) {
+              const data = await resp.json();
+              setClothes(data.clothes || []);
+              setPagination(prev => ({ ...prev, totalPages: 1, total: (data.clothes||[]).length }));
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // 雲端失敗，本地搜尋
+          const localResults = await localStorageService.searchClothes(nlQuery);
+          setClothes(localResults);
+          setPagination(prev => ({ ...prev, totalPages: 1, total: localResults.length }));
+          setLoading(false);
+          return;
+        } catch (error) {
+          console.warn('搜尋失敗，嘗試載入本地資料');
         }
-      });
-
-      if (!response.ok) {
-        throw new Error('獲取衣物列表失敗');
       }
 
-      const data = await response.json();
-      setClothes(data.clothes);
-      setPagination({
-        currentPage: data.currentPage,
-        totalPages: data.totalPages,
-        total: data.total
-      });
+      // 優先使用本地資料
+      try {
+        const localClothes = await localStorageService.getAllClothes({
+          limit: 12,
+          offset: (pagination.currentPage - 1) * 12,
+          category: filters.category,
+          style: filters.style
+        });
+        
+        if (localClothes.length > 0) {
+          setClothes(localClothes);
+          
+          // 獲取總數用於分頁
+          const allLocal = await localStorageService.getAllClothes({ includeImages: false });
+          const totalPages = Math.ceil(allLocal.length / 12);
+          
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalPages,
+            total: allLocal.length
+          });
+          
+          setStats(prev => ({ ...prev, total: allLocal.length }));
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('本地資料載入失敗:', error);
+      }
 
-      // 更新統計信息
-      setStats(prev => ({
-        ...prev,
-        total: data.total
-      }));
+      // 本地無資料，嘗試雲端
+      if (isAuthenticated) {
+        const token = localStorage.getItem('token');
+        const queryParams = new URLSearchParams({
+          page: pagination.currentPage,
+          limit: 12,
+          ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
+        });
+
+        const response = await fetch(`/api/clothes?${queryParams}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setClothes(data.clothes || []);
+          setPagination({
+            currentPage: data.currentPage || 1,
+            totalPages: data.totalPages || 1,
+            total: data.total || 0
+          });
+
+          setStats(prev => ({ ...prev, total: data.total || 0 }));
+        } else {
+          throw new Error('獲取衣物列表失敗');
+        }
+      } else {
+        // 未登錄且無本地資料
+        setClothes([]);
+        setPagination({ currentPage: 1, totalPages: 1, total: 0 });
+      }
 
     } catch (error) {
       console.error('獲取衣物錯誤:', error);
       toast.error('獲取衣物列表失敗');
+      setClothes([]);
     } finally {
       setLoading(false);
     }
@@ -439,15 +491,26 @@ const Wardrobe = () => {
       </FilterSection>
 
       {loading ? (
-        <LoadingMessage>🔄 載入中...</LoadingMessage>
+        <ClothingGridSkeleton count={6} />
       ) : clothes.length === 0 ? (
         <EmptyMessage>
           <EmptyIcon>👔</EmptyIcon>
-          <h3>還沒有衣物</h3>
-          <p>點擊上方的「添加衣物」按鈕開始建立你的數位衣櫃吧！</p>
-          <AddButton onClick={() => navigate('/upload')}>
-            📷 立即添加
-          </AddButton>
+          <h3>{nlMode ? '沒有找到相關衣物' : '還沒有衣物'}</h3>
+          <p>
+            {nlMode 
+              ? '試試其他搜尋關鍵字，或清除搜尋條件查看所有衣物。' 
+              : '點擊上方的「添加衣物」按鈕開始建立你的數位衣櫃吧！'
+            }
+          </p>
+          {nlMode ? (
+            <AddButton onClick={() => { setNlMode(false); setNlQuery(''); fetchClothes(); }}>
+              🔍 查看所有衣物
+            </AddButton>
+          ) : (
+            <AddButton onClick={() => navigate('/upload')}>
+              📷 立即添加
+            </AddButton>
+          )}
         </EmptyMessage>
       ) : (
         <>
@@ -494,6 +557,12 @@ const Wardrobe = () => {
               >
                 下一頁 →
               </PageButton>
+              
+              {pagination.total > 0 && (
+                <div style={{ fontSize: '14px', color: '#666', marginLeft: '15px' }}>
+                  共 {pagination.total} 件衣物，第 {pagination.currentPage} / {pagination.totalPages} 頁
+                </div>
+              )}
             </Pagination>
           )}
         </>

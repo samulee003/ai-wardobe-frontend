@@ -169,6 +169,12 @@ const Header = () => {
               📊 統計
             </NavLink>
             <NavLink 
+              to="/settings" 
+              className={isActive('/settings') ? 'active' : ''}
+            >
+              ⚙️ 設定
+            </NavLink>
+            <NavLink 
               to="/declutter" 
               className={isActive('/declutter') ? 'active' : ''}
             >

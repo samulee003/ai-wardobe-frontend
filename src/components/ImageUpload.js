@@ -5,6 +5,7 @@ import BatchUploadFeedback from './BatchUploadFeedback';
 import ProgressIndicator from './ProgressIndicator';
 import batchUploadService from '../services/batchUploadService';
 import analyticsService from '../services/analyticsService';
+import localStorageService from '../services/localStorageService';
 
 const UploadContainer = styled.div`
   display: flex;
@@ -560,6 +561,17 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
           if (uploadResult.aiAnalysis) {
             analyticsService.trackAIProvider(uploadResult.aiAnalysis.aiService, uploadResult.aiAnalysis.latencyMs);
           }
+          
+          // 保存到本地 IndexedDB
+          if (uploadResult.clothing) {
+            try {
+              await localStorageService.addClothing(uploadResult.clothing, fileData.compressed);
+              console.log('衣物已保存到本地資料庫');
+            } catch (error) {
+              console.warn('保存到本地失敗:', error);
+            }
+          }
+          
           // 檢查可能重複（相似度）
           try {
             const token = localStorage.getItem('token');

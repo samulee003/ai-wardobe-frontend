@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import batchUploadService from '../services/batchUploadService';
 import analyticsService from '../services/analyticsService';
+import localStorageService from '../services/localStorageService';
 
 const MobileContainer = styled.div`
   width: 100%;
@@ -397,10 +398,22 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       
       setBatchResults(result);
       if (result.results?.length) {
-        result.results.forEach(r => {
+        result.results.forEach(async (r) => {
           if (r.aiAnalysis) {
             analyticsService.trackAIProvider(r.aiAnalysis.aiService, r.aiAnalysis.latencyMs);
           }
+          
+          // 保存到本地 IndexedDB
+          if (r.clothing) {
+            try {
+              const originalFile = batchFiles.find(f => f.originalName === r.filename);
+              await localStorageService.addClothing(r.clothing, originalFile?.compressed);
+              console.log('衣物已保存到本地資料庫');
+            } catch (error) {
+              console.warn('保存到本地失敗:', error);
+            }
+          }
+          
           // 相似度去重提示
           (async () => {
             try {
