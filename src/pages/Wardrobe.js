@@ -175,6 +175,8 @@ const Wardrobe = () => {
     season: '',
     search: ''
   });
+  const [nlQuery, setNlQuery] = useState('');
+  const [nlMode, setNlMode] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -202,6 +204,24 @@ const Wardrobe = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
+      // 自然語言搜尋優先
+      if (nlMode && nlQuery.trim()) {
+        const resp = await fetch(`/api/clothes/search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ q: nlQuery, limit: 24 })
+        });
+        if (!resp.ok) throw new Error('自然語言搜尋失敗');
+        const data = await resp.json();
+        setClothes(data.items || []);
+        setPagination(prev => ({ ...prev, totalPages: 1, total: (data.items||[]).length }));
+        setLoading(false);
+        return;
+      }
+
       const queryParams = new URLSearchParams({
         page: pagination.currentPage,
         limit: 12,
@@ -329,6 +349,26 @@ const Wardrobe = () => {
 
       <FilterSection>
         <FilterRow>
+          <FilterGroup style={{ flex: 1, minWidth: 260 }}>
+            <FilterLabel>自然語言搜尋（如：白色正式襯衫 / 夏天藍色上衣）</FilterLabel>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <SearchInput
+                placeholder="輸入描述..."
+                value={nlQuery}
+                onChange={(e) => setNlQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { setNlMode(true); fetchClothes(); }
+                  if (e.key === 'Escape') { setNlMode(false); setNlQuery(''); fetchClothes(); }
+                }}
+                style={{ flex: 1 }}
+              />
+              <PageButton onClick={() => { setNlMode(true); fetchClothes(); }}>搜尋</PageButton>
+              {nlMode && (
+                <PageButton onClick={() => { setNlMode(false); setNlQuery(''); fetchClothes(); }}>清除</PageButton>
+              )}
+            </div>
+          </FilterGroup>
+
           <FilterGroup>
             <FilterLabel>類別</FilterLabel>
             <FilterSelect

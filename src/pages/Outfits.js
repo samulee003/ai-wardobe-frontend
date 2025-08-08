@@ -235,12 +235,14 @@ const EmptyIcon = styled.div`
 
 const Outfits = () => {
   const [recommendations, setRecommendations] = useState([]);
+  const [itemDetails, setItemDetails] = useState({}); // id -> clothing detail
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     occasion: '',
     season: '',
     style: ''
   });
+  const [replacingMap, setReplacingMap] = useState({}); // key: `${outfitIndex}-${itemIndex}` => boolean
 
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -278,6 +280,9 @@ const Outfits = () => {
         toast.info('衣物數量不足，請先添加更多衣物');
       } else {
         setRecommendations(data.recommendations);
+        // 預取衣物詳情以顯示縮圖
+        const ids = Array.from(new Set(data.recommendations.flatMap(r => r.items)));
+        await fetchItemDetails(ids);
         toast.success(`生成了 ${data.recommendations.length} 個穿搭推薦！`);
       }
 
@@ -286,6 +291,63 @@ const Outfits = () => {
       toast.error('生成推薦失敗，請重試');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 取得衣物詳情（批次）
+  const fetchItemDetails = async (ids) => {
+    const token = localStorage.getItem('token');
+    const results = {};
+    await Promise.all(ids.map(async (id) => {
+      if (itemDetails[id]) return; // 已有快取
+      try {
+        const resp = await fetch(`/api/clothes/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (resp.ok) {
+          const data = await resp.json();
+          results[id] = data;
+        }
+      } catch (_) {}
+    }));
+    if (Object.keys(results).length > 0) {
+      setItemDetails(prev => ({ ...prev, ...results }));
+    }
+  };
+
+  // 替換單件：根據相似度找候選，優先同類別且不在當前搭配
+  const replaceItem = async (outfitIndex, itemIndex) => {
+    try {
+      const key = `${outfitIndex}-${itemIndex}`;
+      if (replacingMap[key]) return; // 避免重複點擊
+      setReplacingMap(prev => ({ ...prev, [key]: true }));
+      const token = localStorage.getItem('token');
+      const targetId = recommendations[outfitIndex].items[itemIndex];
+      const targetDetail = itemDetails[targetId];
+      const resp = await fetch(`/api/clothes/${targetId}/similar`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!resp.ok) throw new Error('獲取相似項失敗');
+      const data = await resp.json();
+      const currentIds = new Set(recommendations[outfitIndex].items);
+      // 過濾：不在當前搭配、若有類別則匹配
+      const candidates = (data.items || []).filter(c => !currentIds.has(c._id) && (!targetDetail || !targetDetail.category || c.category === targetDetail.category));
+      if (candidates.length === 0) {
+        toast.info('沒有合適的替換選項');
+        return;
+      }
+      const picked = candidates[0];
+      const next = [...recommendations];
+      next[outfitIndex] = { ...next[outfitIndex], items: next[outfitIndex].items.map((id, idx) => idx === itemIndex ? picked._id : id) };
+      setRecommendations(next);
+      await fetchItemDetails([picked._id]);
+      toast.success('已替換相似單品');
+    } catch (error) {
+      console.error(error);
+      toast.error('替換失敗，請重試');
+    } finally {
+      const key = `${outfitIndex}-${itemIndex}`;
+      setReplacingMap(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
@@ -443,14 +505,30 @@ const Outfits = () => {
 
               <OutfitItems>
                 <ItemsGrid>
-                  {(outfit.items || []).slice(0, 4).map((itemId, itemIndex) => (
-                    <ItemCard key={itemIndex}>
-                      <ItemImage>
-                        {getItemIcon('上衣')}
-                      </ItemImage>
-                      <div>衣物 {itemIndex + 1}</div>
-                    </ItemCard>
-                  ))}
+                  {(outfit.items || []).slice(0, 4).map((itemId, itemIndex) => {
+                    const detail = itemDetails[itemId];
+                    return (
+                      <ItemCard key={itemIndex}>
+                        <ItemImage>
+                          {detail?.imageUrl ? (
+                            <img src={detail.imageUrl} alt={detail?.subCategory || '衣物'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+                          ) : (
+                            <span>{getItemIcon(detail?.category || '上衣')}</span>
+                          )}
+                        </ItemImage>
+                        <div>{detail?.subCategory || `衣物 ${itemIndex + 1}`}</div>
+                        <div style={{ marginTop: 6 }}>
+                          <button
+                            onClick={() => replaceItem(index, itemIndex)}
+                            disabled={!!replacingMap[`${index}-${itemIndex}`]}
+                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd', cursor: replacingMap[`${index}-${itemIndex}`] ? 'not-allowed' : 'pointer', opacity: replacingMap[`${index}-${itemIndex}`] ? 0.6 : 1 }}
+                          >
+                            {replacingMap[`${index}-${itemIndex}`] ? '處理中…' : '🔁 替換'}
+                          </button>
+                        </div>
+                      </ItemCard>
+                    );
+                  })}
                 </ItemsGrid>
               </OutfitItems>
 
