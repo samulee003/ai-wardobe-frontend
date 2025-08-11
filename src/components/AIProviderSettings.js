@@ -266,7 +266,7 @@ const AIProviderSettings = () => {
       const latency = Date.now() - startTime;
       
       if (response.ok) {
-        const result = await response.json();
+        await response.json();
         
         setProviderStatus(prev => ({ ...prev, [providerId]: 'available' }));
         setLastResults(prev => ({
