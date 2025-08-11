@@ -55,13 +55,13 @@ class LocalStorageService {
         
         // 建立 images store（專門儲存圖片 Blob）
         if (!db.objectStoreNames.contains('images')) {
-          const imagesStore = db.createObjectStore('images', { keyPath: 'id' });
+          db.createObjectStore('images', { keyPath: 'id' });
           console.log('Images store 建立完成');
         }
         
         // 建立 settings store
         if (!db.objectStoreNames.contains('settings')) {
-          const settingsStore = db.createObjectStore('settings', { keyPath: 'key' });
+          db.createObjectStore('settings', { keyPath: 'key' });
           console.log('Settings store 建立完成');
         }
       };

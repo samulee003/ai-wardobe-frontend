@@ -91,10 +91,12 @@ export const ListItemSkeleton = () => (
   </div>
 );
 
-export default {
+const Skeletons = {
   ClothingCardSkeleton,
   ClothingGridSkeleton,
   TextSkeleton,
   StatCardSkeleton,
   ListItemSkeleton
 };
+
+export default Skeletons;

@@ -338,11 +338,11 @@ const AIProviderSettings = () => {
 
   const getStatusDisplay = (providerId) => {
     const status = providerStatus[providerId];
-    const result = lastResults[providerId];
+    const res = lastResults[providerId];
     
     switch (status) {
       case 'available':
-        return result?.success ? '✅ 可用' : '⚠️ 可用';
+        return res?.success ? '✅ 可用' : '⚠️ 可用';
       case 'unavailable':
         return '❌ 不可用';
       case 'testing':
@@ -353,10 +353,9 @@ const AIProviderSettings = () => {
   };
 
   const getLatencyDisplay = (providerId) => {
-    const result = lastResults[providerId];
-    if (!result || !result.success) return null;
-    
-    return `${result.latency}ms`;
+    const res = lastResults[providerId];
+    if (!res || !res.success) return null;
+    return `${res.latency}ms`;
   };
 
   return (
