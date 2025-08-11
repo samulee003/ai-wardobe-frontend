@@ -8,7 +8,7 @@ const variantClasses = {
 };
 
 const sizeClasses = {
-  md: 'h-10 px-4 text-sm',
+  md: 'h-11 px-4 text-sm', // 44px 可點擊高度
   lg: 'h-12 px-6 text-base'
 };
 

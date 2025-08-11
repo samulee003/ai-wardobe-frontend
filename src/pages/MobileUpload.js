@@ -132,7 +132,7 @@ const StatCard = styled.div`
 const StatNumber = styled.div`
   font-size: 24px;
   font-weight: bold;
-  color: #007bff;
+  color: var(--color-primary);
   margin-bottom: 5px;
 `;
 

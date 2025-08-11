@@ -1,10 +1,11 @@
-const CACHE_NAME = 'smart-wardrobe-v1.0.0';
+// 提升版本號以強制用戶升級至最新快取
+const CACHE_NAME = 'smart-wardrobe-v2.0.0';
+// 僅緩存基礎殼層與必要資源，避免緩存特定 hashed 檔名導致新版不更新
 const urlsToCache = [
   '/',
-  '/static/css/main.css',
-  '/static/js/main.js',
   '/manifest.json',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/logo192.png'
 ];
 
 // 安裝 Service Worker
@@ -19,6 +20,8 @@ self.addEventListener('install', (event) => {
         console.error('Service Worker: 緩存失敗', error);
       })
   );
+  // 立即接管新 SW，縮短用戶看到新版的時間
+  self.skipWaiting();
 });
 
 // 激活 Service Worker
@@ -35,6 +38,8 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // 立即控制所有 clients，避免必須刷新兩次
+  self.clients.claim();
 });
 
 // 攔截網絡請求

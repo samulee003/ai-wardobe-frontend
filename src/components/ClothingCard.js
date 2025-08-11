@@ -131,6 +131,9 @@ function getColorCode(colorName) {
 }
 
 const ClothingCard = ({ clothing, onWear, onEdit, onDelete }) => {
+  const safeColors = Array.isArray(clothing.colors) ? clothing.colors : [];
+  const safeSeason = Array.isArray(clothing.season) ? clothing.season : [];
+  const wearCount = Number.isFinite(clothing.wearCount) ? clothing.wearCount : 0;
   const handleWear = () => {
     onWear && onWear(clothing._id);
   };
@@ -165,20 +168,20 @@ const ClothingCard = ({ clothing, onWear, onEdit, onDelete }) => {
         <SubCategory>{clothing.subCategory}</SubCategory>
         
         <Colors>
-          {clothing.colors.map((color, index) => (
+          {safeColors.map((color, index) => (
             <ColorDot key={index} color={color} title={color} />
           ))}
         </Colors>
         
         <Tags>
           <Tag>{clothing.style}</Tag>
-          {clothing.season.map((season, index) => (
+          {safeSeason.map((season, index) => (
             <Tag key={index}>{season}</Tag>
           ))}
         </Tags>
         
         <WearInfo>
-          <span>穿過 {clothing.wearCount} 次</span>
+          <span>穿過 {wearCount} 次</span>
           <span>
             {clothing.lastWorn 
               ? `上次: ${new Date(clothing.lastWorn).toLocaleDateString()}`

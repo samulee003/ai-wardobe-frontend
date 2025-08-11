@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MobileShell from '../components/MobileShell';
+import CategoryCard from '../components/CategoryCard';
+import AdCard from '../components/AdCard';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
@@ -420,9 +423,28 @@ const Outfits = () => {
     return null;
   }
 
-  return (
-    <Container>
-      <Header>
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  const content = (
+    <>
+      {/* 行動端分類面板與廣告卡 */}
+      {isMobile && (
+        <div className="space-y-4" style={{ marginBottom: 16 }}>
+          <div className="rounded-3xl p-3 bg-gradient-to-br from-pink-50 via-pink-50 to-blue-50">
+            <div className="space-y-4">
+              <CategoryCard title="無分類" count={0} href="/outfits/uncategorized" />
+              <CategoryCard title="工作" count={0} href="/outfits/work" />
+            </div>
+          </div>
+          <AdCard />
+          <div className="rounded-3xl p-3 bg-gradient-to-br from-pink-50 via-pink-50 to-blue-50">
+            <div className="space-y-4">
+              <CategoryCard title="休閒" count={0} href="/outfits/casual" />
+            </div>
+          </div>
+        </div>
+      )}
+      <Header style={{ textAlign: isMobile ? 'left' : 'center' }}>
         <Title>✨ AI穿搭推薦</Title>
         <Subtitle>讓AI為你搭配今天的完美造型</Subtitle>
       </Header>
@@ -567,8 +589,13 @@ const Outfits = () => {
           ))}
         </RecommendationsGrid>
       )}
-    </Container>
+    </>
   );
+
+  if (isMobile) {
+    return <MobileShell title="穿搭">{content}</MobileShell>;
+  }
+  return <Container>{content}</Container>;
 };
 
 export default Outfits;

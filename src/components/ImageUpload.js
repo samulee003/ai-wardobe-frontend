@@ -18,12 +18,12 @@ const UploadContainer = styled.div`
   transition: all 0.3s ease;
   
   &:hover {
-    border-color: #007bff;
+    border-color: var(--color-primary);
     background: #f0f8ff;
   }
   
   &.dragover {
-    border-color: #007bff;
+    border-color: var(--color-primary);
     background: #e3f2fd;
   }
 `;
@@ -44,11 +44,11 @@ const UploadButton = styled.button`
   transition: all 0.2s ease;
   
   &.primary {
-    background: #007bff;
+    background: var(--color-primary);
     color: white;
     
     &:hover {
-      background: #0056b3;
+      background: var(--color-primary-hover);
     }
   }
   
@@ -134,7 +134,7 @@ const QueueItemProgress = styled.div`
     content: '';
     display: block;
     height: 100%;
-    background: #007bff;
+    background: var(--color-primary);
     width: ${props => props.progress}%;
     transition: width 0.3s ease;
   }
@@ -547,32 +547,29 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       setUploadResults(result);
 
       // 更新文件狀態
-      pendingFiles.forEach((fileData, index) => {
+      await Promise.all(pendingFiles.map(async (fileData) => {
         const fileIndex = fileQueue.findIndex(item => item.id === fileData.id);
         const uploadResult = result.results?.find(r => r.filename === fileData.originalName);
         const uploadError = result.errors?.find(e => e.filename === fileData.originalName);
 
         if (uploadResult) {
-          updateFileInQueue(fileIndex, { 
-            status: 'success', 
+          updateFileInQueue(fileIndex, {
+            status: 'success',
             progress: 100,
             result: uploadResult
           });
           if (uploadResult.aiAnalysis) {
             analyticsService.trackAIProvider(uploadResult.aiAnalysis.aiService, uploadResult.aiAnalysis.latencyMs);
           }
-          
-          // 保存到本地 IndexedDB
+
           if (uploadResult.clothing) {
             try {
-              await localStorageService.addClothing(uploadResult.clothing, fileData.compressed);
-              console.log('衣物已保存到本地資料庫');
+              await localStorageService.addClothing(uploadResult.clothing, fileData.compressedFile);
             } catch (error) {
               console.warn('保存到本地失敗:', error);
             }
           }
-          
-          // 檢查可能重複（相似度）
+
           try {
             const token = localStorage.getItem('token');
             const similarResp = await fetch(`/api/clothes/${uploadResult.clothing._id}/similar`, {
@@ -586,17 +583,16 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
               }
             }
           } catch (dupErr) {
-            // 靜默處理，不阻斷流程
             console.debug('相似檢查失敗', dupErr);
           }
         } else if (uploadError) {
-          updateFileInQueue(fileIndex, { 
-            status: 'error', 
+          updateFileInQueue(fileIndex, {
+            status: 'error',
             progress: 0,
             error: uploadError.error
           });
         }
-      });
+      }));
 
       // 顯示結果通知
       if (result.summary.successRate === 100) {

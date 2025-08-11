@@ -37,7 +37,7 @@ const Step = styled.div`
   gap: 8px;
   padding: 8px 16px;
   border-radius: 20px;
-  background: ${props => props.active ? '#007bff' : '#f8f9fa'};
+  background: ${props => props.active ? 'var(--color-primary)' : '#f8f9fa'};
   color: ${props => props.active ? 'white' : '#666'};
   font-size: 14px;
   font-weight: 600;
@@ -78,7 +78,7 @@ const FieldInput = styled.input`
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--color-primary);
   }
 `;
 
@@ -91,7 +91,7 @@ const FieldSelect = styled.select`
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--color-primary);
   }
 `;
 

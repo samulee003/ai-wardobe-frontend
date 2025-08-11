@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
+import MobileShell from '../components/MobileShell';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import exportImportService from '../services/exportImportService';
@@ -367,9 +368,11 @@ const Settings = () => {
     setImportData(null);
   };
 
-  return (
-    <Container>
-      <Header>
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  const content = (
+    <>
+      <Header style={{ textAlign: isMobile ? 'left' : 'center' }}>
         <Title>⚙️ 設定</Title>
         <Subtitle>備份與還原你的衣櫃資料</Subtitle>
       </Header>
@@ -497,8 +500,13 @@ const Settings = () => {
           </DialogContent>
         </ConflictDialog>
       )}
-    </Container>
+    </>
   );
+
+  if (isMobile) {
+    return <MobileShell title="我的">{content}</MobileShell>;
+  }
+  return <Container>{content}</Container>;
 };
 
 export default Settings;

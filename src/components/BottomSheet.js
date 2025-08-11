@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--color-backdrop, rgba(15, 23, 42, 0.45));
   display: ${props => (props.open ? 'block' : 'none')};
   z-index: 1000;
 `;
@@ -14,7 +14,7 @@ const Sheet = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fff;
+  background: var(--color-surface, #fff);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.15);
@@ -30,7 +30,7 @@ const Handle = styled.div`
   width: 36px;
   height: 4px;
   border-radius: 999px;
-  background: #E5E7EB;
+  background: var(--color-border, #E5E7EB);
   margin: 10px auto 8px;
 `;
 
@@ -44,7 +44,7 @@ const Header = styled.div`
 const Title = styled.div`
   font-weight: 600;
   font-size: 16px;
-  color: #111827;
+  color: var(--color-text-primary, #111827);
 `;
 
 const Content = styled.div`
@@ -62,18 +62,19 @@ const Footer = styled.div`
 const Button = styled.button`
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1px solid ${props => (props.variant === 'primary' ? '#4F46E5' : '#E5E7EB')};
-  background: ${props => (props.variant === 'primary' ? '#4F46E5' : '#fff')};
-  color: ${props => (props.variant === 'primary' ? '#fff' : '#111827')};
+  border: 1px solid ${props => (props.variant === 'primary' ? 'var(--color-primary, #4F46E5)' : 'var(--color-border, #E5E7EB)')};
+  background: ${props => (props.variant === 'primary' ? 'var(--color-primary, #4F46E5)' : 'var(--color-surface, #fff)')};
+  color: ${props => (props.variant === 'primary' ? '#fff' : 'var(--color-text-primary, #111827)')};
   font-weight: 600;
   cursor: pointer;
+  height: 44px; /* A11y 可點擊區 */
 `;
 
 const BottomSheet = ({ open, title, children, onClose, actions = [] }) => {
   return (
     <>
       <Overlay open={open} onClick={onClose} />
-      <Sheet open={open} role="dialog" aria-modal="true">
+      <Sheet open={open} role="dialog" aria-modal="true" aria-label={title}>
         <Handle />
         <Header>
           <Title>{title}</Title>

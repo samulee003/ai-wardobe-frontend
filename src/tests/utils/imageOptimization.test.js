@@ -1,31 +1,40 @@
 import imageOptimizer from '../../utils/imageOptimization';
 
-// Mock canvas and image
-const mockCanvas = {
-  width: 0,
-  height: 0,
-  getContext: jest.fn(() => ({
-    drawImage: jest.fn()
-  })),
-  toBlob: jest.fn((callback, type, quality) => {
-    const mockBlob = new Blob(['mock-image-data'], { type });
-    callback(mockBlob);
-  })
-};
+// Mock canvas and image（僅在此測試檔生效）
+let mockImage;
+let mockCanvas;
+beforeEach(() => {
+  // Canvas mock
+  mockCanvas = {
+    width: 0,
+    height: 0,
+    getContext: jest.fn(() => ({ drawImage: jest.fn() })),
+    toBlob: jest.fn((callback, type, quality) => {
+      const blob = new Blob(['mock-image-data'], { type });
+      callback(blob);
+    }),
+    toDataURL: jest.fn(() => 'data:image/webp;base64,mock')
+  };
 
-const mockImage = {
-  width: 1000,
-  height: 800,
-  onload: null,
-  onerror: null,
-  src: ''
-};
+  const realCreate = document.createElement.bind(document);
+  jest.spyOn(document, 'createElement').mockImplementation((tag) => {
+    if (tag === 'canvas') return mockCanvas;
+    if (tag === 'img' || tag === 'image') return { ...mockImage };
+    return realCreate(tag);
+  });
 
-// Mock DOM methods
-global.document.createElement = jest.fn((tagName) => {
-  if (tagName === 'canvas') return mockCanvas;
-  if (tagName === 'img') return { ...mockImage };
-  return {};
+  // Image mock
+  mockImage = {
+    width: 1000,
+    height: 800,
+    onload: null,
+    onerror: null,
+    src: ''
+  };
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 global.URL.createObjectURL = jest.fn(() => 'mock-url');
@@ -103,11 +112,10 @@ describe('ImageOptimizer', () => {
     test('should compress image successfully', async () => {
       const mockFile = new File(['mock-data'], 'test.jpg', { type: 'image/jpeg' });
       
-      // Mock successful image load
-      setTimeout(() => {
-        if (mockImage.onload) mockImage.onload();
-      }, 0);
+      // 模擬圖片載入成功
+      setTimeout(() => mockImage.onload && mockImage.onload(), 0);
 
+      jest.setTimeout(10000);
       const result = await imageOptimizer.compressImage(mockFile);
       
       expect(result).toBeInstanceOf(Blob);
@@ -117,11 +125,11 @@ describe('ImageOptimizer', () => {
     test('should handle image load error', async () => {
       const mockFile = new File(['mock-data'], 'test.jpg', { type: 'image/jpeg' });
       
-      // Mock image load error
-      setTimeout(() => {
-        if (mockImage.onerror) mockImage.onerror();
-      }, 0);
+      // 模擬圖片載入錯誤
+      mockImage.onload = null;
+      setTimeout(() => mockImage.onerror && mockImage.onerror(new Error('圖片載入失敗')), 0);
 
+      jest.setTimeout(10000);
       await expect(imageOptimizer.compressImage(mockFile)).rejects.toThrow('圖片載入失敗');
     });
   });

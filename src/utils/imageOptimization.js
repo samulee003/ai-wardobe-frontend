@@ -14,7 +14,10 @@ class ImageOptimizer {
     const config = { ...this.defaultOptions, ...options };
     
     return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement && document.createElement('canvas');
+      if (!canvas || typeof canvas.getContext !== 'function') {
+        return reject(new Error('當前環境不支援 Canvas'));
+      }
       const ctx = canvas.getContext('2d');
       const img = new Image();
       
@@ -161,10 +164,15 @@ class ImageOptimizer {
 
   // 檢查 WebP 支持
   supportsWebP() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    try {
+      const canvas = document.createElement && document.createElement('canvas');
+      if (!canvas || typeof canvas.toDataURL !== 'function') return false;
+      canvas.width = 1;
+      canvas.height = 1;
+      return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    } catch (_) {
+      return false;
+    }
   }
 
   // 批量處理圖片

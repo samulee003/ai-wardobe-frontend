@@ -54,7 +54,7 @@ const StatCard = ({ children }) => (
 const StatNumber = styled.div`
   font-size: 28px;
   font-weight: bold;
-  color: #007bff;
+  color: var(--color-primary);
   margin-bottom: 5px;
 `;
 

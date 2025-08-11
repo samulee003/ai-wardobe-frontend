@@ -20,7 +20,7 @@ const MobileContainer = styled.div`
 const CameraButton = styled.button`
   width: 100%;
   height: 120px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: white;
   border: none;
   border-radius: 16px;
@@ -38,7 +38,7 @@ const CameraButton = styled.button`
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+    box-shadow: 0 6px 20px rgba(79,70,229,0.4);
   }
   
   &:active {
@@ -81,7 +81,7 @@ const QuickButton = styled.button`
   gap: 8px;
   
   &:hover {
-    border-color: #007bff;
+    border-color: var(--color-primary);
     background: #f8f9ff;
   }
   

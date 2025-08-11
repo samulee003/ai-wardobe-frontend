@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MobileShell from '../components/MobileShell';
 import styled from 'styled-components';
+import Button from '../components/ui/Button';
+import EmptyState from '../components/EmptyState';
 import { toast } from 'react-toastify';
 import ClothingCard from '../components/ClothingCard';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,31 +26,19 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  color: #333;
+  color: var(--color-text-primary);
   margin: 0;
 `;
 
-const AddButton = styled.button`
-  padding: 12px 24px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background: #0056b3;
-  }
+const AddButtonInline = styled(Button)`
+  white-space: nowrap;
 `;
 
 const FilterSection = styled.div`
-  background: white;
+  background: var(--color-surface);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(15,23,42,0.08);
   margin-bottom: 30px;
 `;
 
@@ -68,32 +59,32 @@ const FilterGroup = styled.div`
 const FilterLabel = styled.label`
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary);
 `;
 
 const FilterSelect = styled.select`
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   min-width: 120px;
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--color-primary);
   }
 `;
 
 const SearchInput = styled.input`
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   min-width: 200px;
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--color-primary);
   }
 `;
 
@@ -105,14 +96,14 @@ const StatsBar = styled.div`
 `;
 
 const StatItem = styled.div`
-  background: #f8f9fa;
+  background: var(--color-surface-alt);
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
   
   strong {
-    color: #333;
+    color: var(--color-text-primary);
   }
 `;
 
@@ -123,23 +114,7 @@ const ClothingGrid = styled.div`
   margin-top: 20px;
 `;
 
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 16px;
-`;
-
-const EmptyMessage = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 64px;
-  margin-bottom: 20px;
-`;
+// 移除舊的空狀態樣式，統一使用通用 EmptyState 元件
 
 const Pagination = styled.div`
   display: flex;
@@ -151,19 +126,19 @@ const Pagination = styled.div`
 
 const PageButton = styled.button`
   padding: 8px 12px;
-  border: 1px solid #ddd;
-  background: ${props => props.active ? '#007bff' : 'white'};
-  color: ${props => props.active ? 'white' : '#333'};
+  border: 1px solid var(--color-border);
+  background: ${props => props.active ? 'var(--color-primary)' : 'var(--color-surface)'};
+  color: ${props => props.active ? '#fff' : 'var(--color-text-primary)'};
   border-radius: 6px;
   cursor: pointer;
   
   &:hover {
-    background: ${props => props.active ? '#0056b3' : '#f8f9fa'};
+    background: ${props => props.active ? 'var(--color-primary-hover)' : 'var(--color-surface-alt)'};
   }
   
   &:disabled {
-    background: #f8f9fa;
-    color: #ccc;
+    background: var(--color-surface-alt);
+    color: var(--color-text-secondary);
     cursor: not-allowed;
   }
 `;
@@ -390,13 +365,15 @@ const Wardrobe = () => {
     return null;
   }
 
-  return (
-    <Container>
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  const content = (
+    <>
       <Header>
         <Title>👔 我的衣櫃</Title>
-        <AddButton onClick={() => navigate('/upload')}>
+        <AddButtonInline onClick={() => navigate('/upload')}>
           ➕ 添加衣物
-        </AddButton>
+        </AddButtonInline>
       </Header>
 
       <FilterSection>
@@ -493,25 +470,20 @@ const Wardrobe = () => {
       {loading ? (
         <ClothingGridSkeleton count={6} />
       ) : clothes.length === 0 ? (
-        <EmptyMessage>
-          <EmptyIcon>👔</EmptyIcon>
-          <h3>{nlMode ? '沒有找到相關衣物' : '還沒有衣物'}</h3>
-          <p>
-            {nlMode 
-              ? '試試其他搜尋關鍵字，或清除搜尋條件查看所有衣物。' 
-              : '點擊上方的「添加衣物」按鈕開始建立你的數位衣櫃吧！'
-            }
-          </p>
-          {nlMode ? (
-            <AddButton onClick={() => { setNlMode(false); setNlQuery(''); fetchClothes(); }}>
-              🔍 查看所有衣物
-            </AddButton>
-          ) : (
-            <AddButton onClick={() => navigate('/upload')}>
-              📷 立即添加
-            </AddButton>
-          )}
-        </EmptyMessage>
+        <EmptyState
+          icon="👔"
+          title={nlMode ? '沒有找到相關衣物' : '還沒有衣物'}
+          description={nlMode ? '試試其他搜尋關鍵字，或清除搜尋條件查看所有衣物。' : '點擊「添加衣物」或使用底部相機快速上傳，開始建立你的數位衣櫃。'}
+          primaryAction={nlMode ? {
+            label: '🔍 查看所有衣物',
+            onClick: () => { setNlMode(false); setNlQuery(''); fetchClothes(); },
+            variant: 'secondary'
+          } : {
+            label: '📷 立即添加',
+            onClick: () => navigate('/upload'),
+            variant: 'primary'
+          }}
+        />
       ) : (
         <>
           <ClothingGrid>
@@ -567,8 +539,18 @@ const Wardrobe = () => {
           )}
         </>
       )}
-    </Container>
+    </>
   );
+
+  if (isMobile) {
+    return (
+      <MobileShell title="衣櫃">
+        {content}
+      </MobileShell>
+    );
+  }
+
+  return <Container>{content}</Container>;
 };
 
 export default Wardrobe;

@@ -24,14 +24,14 @@ const HeaderContent = styled.div`
 const Logo = styled(Link)`
   font-size: 24px;
   font-weight: bold;
-  color: #007bff;
+  color: var(--color-primary);
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 8px;
   
   &:hover {
-    color: #0056b3;
+    color: var(--color-primary-hover);
   }
 `;
 
@@ -56,11 +56,11 @@ const NavLink = styled(Link)`
   
   &:hover {
     background: #f8f9fa;
-    color: #007bff;
+    color: var(--color-primary);
   }
   
   &.active {
-    background: #007bff;
+    background: var(--color-primary);
     color: white;
   }
   
@@ -86,7 +86,7 @@ const UserName = styled.span`
 `;
 
 const LogoutButton = styled.button`
-  background: #dc3545;
+  background: var(--color-danger);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -96,12 +96,12 @@ const LogoutButton = styled.button`
   transition: background-color 0.2s ease;
   
   &:hover {
-    background: #c82333;
+    background: #d32f2f;
   }
 `;
 
 const LoginButton = styled(Link)`
-  background: #007bff;
+  background: var(--color-primary);
   color: white;
   text-decoration: none;
   padding: 8px 16px;
@@ -111,7 +111,7 @@ const LoginButton = styled(Link)`
   transition: background-color 0.2s ease;
   
   &:hover {
-    background: #0056b3;
+    background: var(--color-primary-hover);
   }
 `;
 
