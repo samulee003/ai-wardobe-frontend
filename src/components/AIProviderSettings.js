@@ -152,19 +152,13 @@ const Button = styled.button`
   }
 `;
 
+// 精簡為 KIMI + 本地分析
 const providers = [
   {
-    id: 'openai',
-    name: 'OpenAI GPT-4 Vision',
-    description: '高品質圖像分析，準確度最佳',
-    icon: '🧠',
-    requiresKey: true
-  },
-  {
-    id: 'gemini',
-    name: 'Google Gemini Vision',
-    description: '快速回應，成本效益佳',
-    icon: '💎',
+    id: 'kimi',
+    name: 'KIMI (Moonshot) Vision',
+    description: '主力供應商：穩定、快速的圖像理解',
+    icon: '🌙',
     requiresKey: true
   },
   {
@@ -177,7 +171,7 @@ const providers = [
 ];
 
 const AIProviderSettings = () => {
-  const [selectedProvider, setSelectedProvider] = useState('openai');
+  const [selectedProvider, setSelectedProvider] = useState('kimi');
   const [providerStatus, setProviderStatus] = useState({});
   const [testing, setTesting] = useState(null);
   const [lastResults, setLastResults] = useState({});
@@ -194,16 +188,11 @@ const AIProviderSettings = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.services?.ai) {
-          setSelectedProvider(data.services.ai.preferredService || 'openai');
+          setSelectedProvider(data.services.ai.preferredService || 'kimi');
           
           // 更新狀態
           const status = {};
-          if (data.services.ai.hasOpenAIKey) {
-            status.openai = 'available';
-          }
-          if (data.services.ai.hasGeminiKey) {
-            status.gemini = 'available';
-          }
+          if (data.services.ai.hasKimiKey) status.kimi = 'available';
           status.fallback = 'available';
           
           setProviderStatus(status);
@@ -230,10 +219,8 @@ const AIProviderSettings = () => {
       if (response.ok) {
         const data = await response.json();
         const ai = data.services?.ai;
-        
         const status = {};
-        status.openai = ai?.hasOpenAIKey ? 'available' : 'unavailable';
-        status.gemini = ai?.hasGeminiKey ? 'available' : 'unavailable';
+        status.kimi = ai?.hasKimiKey ? 'available' : 'unavailable';
         status.fallback = 'available';
         
         setProviderStatus(status);
@@ -321,9 +308,7 @@ const AIProviderSettings = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          provider: selectedProvider
-        })
+        body: JSON.stringify({ provider: selectedProvider })
       });
       
       if (response.ok) {

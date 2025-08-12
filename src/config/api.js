@@ -1,23 +1,25 @@
 // API 配置
 const API_CONFIG = {
-  // 本地開發
-  development: 'http://localhost:5000',
-  
-  // 生產環境 (如果有服務器)
-  production: process.env.REACT_APP_API_URL || 'http://localhost:5000',
-  
+  // 本地開發 - 可透過環境變數覆寫為 Zeabur API
+  development: process.env.REACT_APP_API_URL || 'https://ai-wardobe.zeabur.app',
+  // 生產環境 (雲端 API)
+  production: process.env.REACT_APP_API_URL || 'https://ai-wardobe.zeabur.app',
   // 離線模式 - 使用本地存儲
   offline: null
 };
 
 // 檢測當前環境
 const getCurrentEnvironment = () => {
-  // 如果是 Capacitor 應用且沒有網絡連接
-  if (window.Capacitor) {
-    return 'offline';
-  }
-  
-  return process.env.NODE_ENV || 'development';
+  const forced = process.env.REACT_APP_MODE;
+  if (forced === 'offline') return 'offline';
+  // 允許在裝置上依然使用雲端：僅當顯式設定 OFFLINE_MODE 時才離線
+  try {
+    if (typeof window !== 'undefined') {
+      const flag = localStorage.getItem('OFFLINE_MODE');
+      if (flag === 'true') return 'offline';
+    }
+  } catch (_) {}
+  return process.env.REACT_APP_ENV || process.env.NODE_ENV || 'development';
 };
 
 export const API_BASE_URL = API_CONFIG[getCurrentEnvironment()];
