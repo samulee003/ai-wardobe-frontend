@@ -178,7 +178,7 @@ class ApiService {
     if (this.isOffline) return false;
 
     try {
-      await this.api.get('/api/health');
+      await this.api.get('/health');
       return true;
     } catch (error) {
       this.isOffline = true;

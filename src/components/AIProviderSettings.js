@@ -185,7 +185,7 @@ const AIProviderSettings = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/health`);
+      const response = await fetch(`${API_BASE_URL}/health`);
       if (response.ok) {
         const data = await response.json();
         if (data.services?.ai) {
@@ -216,7 +216,7 @@ const AIProviderSettings = () => {
 
   const checkProviderStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/health`);
+      const response = await fetch(`${API_BASE_URL}/health`);
       if (response.ok) {
         const data = await response.json();
         const ai = data.services?.ai;
