@@ -3,7 +3,8 @@ import axios from 'axios';
 class UpdateChecker {
   constructor() {
     this.currentVersion = process.env.REACT_APP_VERSION || '1.0.0';
-    this.githubRepo = process.env.REACT_APP_GITHUB_REPO || 'your-username/smart-wardrobe-app';
+    // 將預設倉庫改為實際前端倉庫，避免 404
+    this.githubRepo = process.env.REACT_APP_GITHUB_REPO || 'samulee003/ai-wardobe-frontend';
     this.apiUrl = `https://api.github.com/repos/${this.githubRepo}/releases/latest`;
     this.checkInterval = 24 * 60 * 60 * 1000; // 24小時
     this.lastCheckKey = 'lastUpdateCheck';

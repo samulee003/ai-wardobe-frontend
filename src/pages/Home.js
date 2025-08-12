@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
-import ADHDModeToggle from '../components/ADHDModeToggle';
 import QuickWearRecord from '../components/QuickWearRecord';
 import Button from '../components/ui/Button';
 import Card, { CardContent } from '../components/ui/Card';
+import { API_BASE_URL } from '../config/api';
 
 const Container = styled.div`
-  max-width: ${props => props.adhdMode ? '800px' : '1200px'};
+  max-width: 1200px;
   margin: 0 auto;
-  padding: ${props => props.adhdMode ? '15px' : '20px'};
+  padding: 20px;
 `;
 
 const Header = styled.div`
@@ -28,8 +28,8 @@ const WelcomeSection = styled.div`
 
 const WelcomeTitle = styled.h1`
   color: #333;
-  margin: 0 0 ${props => props.adhdMode ? '0' : '10px'} 0;
-  font-size: ${props => props.adhdMode ? '28px' : '36px'};
+  margin: 0 0 10px 0;
+  font-size: 36px;
 `;
 
 const WelcomeSubtitle = styled.p`
@@ -40,7 +40,7 @@ const WelcomeSubtitle = styled.p`
 
 const QuickStats = styled.div`
   display: grid;
-  grid-template-columns: repeat(${props => props.adhdMode ? '2' : '3'}, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   margin-bottom: 30px;
 `;
@@ -65,13 +65,13 @@ const StatLabel = styled.div`
 
 const QuickActions = styled.div`
   display: grid;
-  grid-template-columns: repeat(${props => props.adhdMode ? '1' : 'auto-fit'}, minmax(${props => props.adhdMode ? '100%' : '250px'}, 1fr));
-  gap: ${props => props.adhdMode ? '15px' : '20px'};
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
   margin-bottom: 40px;
 `;
 
-const ActionCard = ({ onClick, children, adhdMode, priority }) => (
-  <Card className={priority && adhdMode ? 'border-primary' : ''}>
+const ActionCard = ({ onClick, children, priority }) => (
+  <Card className={priority ? 'border-primary' : ''}>
     <CardContent>
       <div onClick={onClick} role="button">
         {children}
@@ -81,21 +81,20 @@ const ActionCard = ({ onClick, children, adhdMode, priority }) => (
 );
 
 const ActionIcon = styled.div`
-  font-size: ${props => props.adhdMode ? '48px' : '64px'};
-  margin-bottom: ${props => props.adhdMode ? '15px' : '20px'};
+  font-size: 64px;
+  margin-bottom: 20px;
 `;
 
 const ActionTitle = styled.h3`
   color: #333;
-  margin: 0 0 ${props => props.adhdMode ? '8px' : '10px'} 0;
-  font-size: ${props => props.adhdMode ? '20px' : '24px'};
+  margin: 0 0 10px 0;
+  font-size: 24px;
 `;
 
 const ActionDescription = styled.p`
   color: #666;
   margin: 0;
-  font-size: ${props => props.adhdMode ? '14px' : '16px'};
-  display: ${props => props.adhdMode ? 'none' : 'block'};
+  font-size: 16px;
 `;
 
 const RecentSection = styled.div`
@@ -138,7 +137,6 @@ const RecentText = styled.div`
 const Home = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-  const [adhdMode, setAdhdMode] = useState(false);
   const [clothes, setClothes] = useState([]);
   const [stats, setStats] = useState({});
 
@@ -148,10 +146,6 @@ const Home = () => {
       return;
     }
     
-    // 載入ADHD模式設置
-    const savedMode = localStorage.getItem('adhdMode') === 'true';
-    setAdhdMode(savedMode);
-    
     fetchQuickData();
   }, [isAuthenticated, navigate]);
 
@@ -159,8 +153,8 @@ const Home = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // 獲取最近衣物
-      const clothesRes = await fetch('/api/clothes?limit=5', {
+      // 獲取最近衣物（改用絕對 API_BASE_URL，避免不同網域導致 404/HTML 回應觸發 JSON 解析錯誤）
+      const clothesRes = await fetch(`${API_BASE_URL}/api/clothes?limit=5`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (clothesRes.ok) {
@@ -169,7 +163,7 @@ const Home = () => {
       }
       
       // 獲取統計數據
-      const statsRes = await fetch('/api/clothes/statistics', {
+      const statsRes = await fetch(`${API_BASE_URL}/api/clothes/statistics`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statsRes.ok) {
@@ -183,11 +177,7 @@ const Home = () => {
 
   if (!isAuthenticated) return null;
 
-  const mainActions = adhdMode ? [
-    { path: '/upload', icon: '📷', title: '拍照上傳', desc: '添加衣物' },
-    { path: '/wardrobe', icon: '👔', title: '我的衣櫃', desc: '查看衣物' },
-    { path: '/outfits', icon: '✨', title: '穿搭建議', desc: 'AI推薦' }
-  ] : [
+  const mainActions = [
     { path: '/upload', icon: '📷', title: '拍照上傳', desc: '添加新的衣物到衣櫃' },
     { path: '/wardrobe', icon: '👔', title: '我的衣櫃', desc: '瀏覽和管理衣物' },
     { path: '/outfits', icon: '✨', title: '穿搭建議', desc: 'AI智能搭配推薦' },
@@ -196,23 +186,17 @@ const Home = () => {
   ];
 
   return (
-    <Container adhdMode={adhdMode}>
+    <Container>
       <Header>
         <WelcomeSection>
-          <WelcomeTitle adhdMode={adhdMode}>
+          <WelcomeTitle>
             👋 歡迎，{user?.name || '用戶'}！
           </WelcomeTitle>
-          {!adhdMode && (
-            <WelcomeSubtitle>讓我們一起管理你的智能衣櫃</WelcomeSubtitle>
-          )}
+          <WelcomeSubtitle>讓我們一起管理你的智能衣櫃</WelcomeSubtitle>
         </WelcomeSection>
-        <ADHDModeToggle 
-          enabled={adhdMode} 
-          onChange={setAdhdMode}
-        />
       </Header>
 
-      <QuickStats adhdMode={adhdMode}>
+      <QuickStats>
         <StatCard>
           <StatNumber>{stats.totalClothes || 0}</StatNumber>
           <StatLabel>件衣物</StatLabel>
@@ -221,25 +205,22 @@ const Home = () => {
           <StatNumber>{stats.recentWearsCount || 0}</StatNumber>
           <StatLabel>本月穿著</StatLabel>
         </StatCard>
-        {!adhdMode && (
-          <StatCard>
-            <StatNumber>{stats.utilizationRate || 0}%</StatNumber>
-            <StatLabel>利用率</StatLabel>
-          </StatCard>
-        )}
+        <StatCard>
+          <StatNumber>{stats.utilizationRate || 0}%</StatNumber>
+          <StatLabel>利用率</StatLabel>
+        </StatCard>
       </QuickStats>
 
-      <QuickActions adhdMode={adhdMode}>
+      <QuickActions>
         {mainActions.map((action, index) => (
           <ActionCard 
             key={action.path}
             onClick={() => navigate(action.path)}
-            adhdMode={adhdMode}
             priority={index < 3}
           >
-            <ActionIcon adhdMode={adhdMode}>{action.icon}</ActionIcon>
-            <ActionTitle adhdMode={adhdMode}>{action.title}</ActionTitle>
-            <ActionDescription adhdMode={adhdMode}>
+            <ActionIcon>{action.icon}</ActionIcon>
+            <ActionTitle>{action.title}</ActionTitle>
+            <ActionDescription>
               {action.desc}
             </ActionDescription>
             <div style={{ marginTop: 12 }}>
@@ -251,31 +232,29 @@ const Home = () => {
         ))}
       </QuickActions>
 
-      {!adhdMode && (
-        <RecentSection>
-          <SectionTitle>📈 最近活動</SectionTitle>
-          <RecentGrid>
-            <RecentItem>
-              <RecentIcon>📷</RecentIcon>
-              <RecentText>
-                {stats.totalClothes > 0 
-                  ? `衣櫃中有 ${stats.totalClothes} 件衣物`
-                  : '還沒有添加衣物，點擊上方開始吧！'
-                }
-              </RecentText>
-            </RecentItem>
-            <RecentItem>
-              <RecentIcon>👕</RecentIcon>
-              <RecentText>
-                {stats.recentWearsCount > 0
-                  ? `本月已穿著 ${stats.recentWearsCount} 次`
-                  : '還沒有記錄穿著，試試快速記錄功能！'
-                }
-              </RecentText>
-            </RecentItem>
-          </RecentGrid>
-        </RecentSection>
-      )}
+      <RecentSection>
+        <SectionTitle>📈 最近活動</SectionTitle>
+        <RecentGrid>
+          <RecentItem>
+            <RecentIcon>📷</RecentIcon>
+            <RecentText>
+              {stats.totalClothes > 0 
+                ? `衣櫃中有 ${stats.totalClothes} 件衣物`
+                : '還沒有添加衣物，點擊上方開始吧！'
+              }
+            </RecentText>
+          </RecentItem>
+          <RecentItem>
+            <RecentIcon>👕</RecentIcon>
+            <RecentText>
+              {stats.recentWearsCount > 0
+                ? `本月已穿著 ${stats.recentWearsCount} 次`
+                : '還沒有記錄穿著，試試快速記錄功能！'
+              }
+            </RecentText>
+          </RecentItem>
+        </RecentGrid>
+      </RecentSection>
 
       <QuickWearRecord 
         clothes={clothes} 
