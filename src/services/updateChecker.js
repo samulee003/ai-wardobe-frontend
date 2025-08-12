@@ -86,10 +86,13 @@ class UpdateChecker {
       const release = response.data;
       
       // 查找 APK 文件
-      const apkAsset = release.assets.find(asset => 
-        asset.name.endsWith('.apk') && 
-        (asset.name.includes('release') || asset.name.includes('signed'))
-      );
+      const apkAsset = Array.isArray(release.assets)
+        ? release.assets.find(asset => 
+            typeof asset.name === 'string' &&
+            asset.name.endsWith('.apk') && 
+            (asset.name.includes('release') || asset.name.includes('signed'))
+          )
+        : null;
 
       return {
         tagName: release.tag_name,
@@ -102,6 +105,19 @@ class UpdateChecker {
       };
 
     } catch (error) {
+      // 若倉庫不存在 releases（或私有導致 404），優雅降級為「無更新」
+      if (error.response && error.response.status === 404) {
+        this.log('releases 不存在或私有：跳過更新提示');
+        return {
+          tagName: this.currentVersion,
+          name: '',
+          body: '',
+          publishedAt: null,
+          downloadUrl: null,
+          apkSize: null,
+          prerelease: false
+        };
+      }
       this.log(`獲取最新版本失敗: ${error.message}`);
       throw error;
     }
