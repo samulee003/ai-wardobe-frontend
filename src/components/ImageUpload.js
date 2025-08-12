@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import BatchUploadFeedback from './BatchUploadFeedback';
 import ProgressIndicator from './ProgressIndicator';
 import batchUploadService from '../services/batchUploadService';
+import { API_BASE_URL } from '../config/api';
 import analyticsService from '../services/analyticsService';
 import localStorageService from '../services/localStorageService';
 
@@ -542,7 +543,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             progress: Math.round(progress * 100) 
           });
         });
-      }, { timeoutMs: 20000, signal: abortControllerRef.current.signal });
+      }, { timeoutMs: 20000, signal: abortControllerRef.current.signal, baseUrl: API_BASE_URL });
       
       setUploadResults(result);
 

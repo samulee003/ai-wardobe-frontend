@@ -5,7 +5,13 @@
 
 class BatchUploadService {
   constructor() {
-    this.baseURL = '/api/clothes';
+    try {
+      // 動態採用前端配置的 API_BASE_URL
+      const { API_BASE_URL } = require('../config/api');
+      this.baseURL = `${API_BASE_URL}/api/clothes`;
+    } catch (_) {
+      this.baseURL = '/api/clothes';
+    }
   }
 
   /**
@@ -15,7 +21,7 @@ class BatchUploadService {
    * @returns {Promise<Object>} 上傳結果
    */
   async uploadBatch(files, onProgress = null, options = {}) {
-    const { timeoutMs = 20000, signal } = options;
+    const { timeoutMs = 20000, signal, baseUrl } = options;
     if (!files || files.length === 0) {
       throw new Error('沒有可上傳的文件');
     }
@@ -123,7 +129,8 @@ class BatchUploadService {
           reject(new Error('已取消上傳'));
         });
         
-        xhr.open('POST', `${this.baseURL}/batch-upload`);
+        const endpoint = baseUrl ? `${baseUrl}/api/clothes/batch-upload` : `${this.baseURL}/batch-upload`;
+        xhr.open('POST', endpoint);
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.timeout = timeoutMs; // 預設 20 秒超時，可由參數覆蓋
         xhr.send(formData);

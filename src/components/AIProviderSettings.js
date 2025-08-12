@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 const Container = styled.div`
   display: flex;
@@ -184,7 +185,7 @@ const AIProviderSettings = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch('/api/health');
+      const response = await fetch(`${API_BASE_URL}/api/health`);
       if (response.ok) {
         const data = await response.json();
         if (data.services?.ai) {
@@ -215,7 +216,7 @@ const AIProviderSettings = () => {
 
   const checkProviderStatus = async () => {
     try {
-      const response = await fetch('/api/health');
+      const response = await fetch(`${API_BASE_URL}/api/health`);
       if (response.ok) {
         const data = await response.json();
         const ai = data.services?.ai;
@@ -238,7 +239,7 @@ const AIProviderSettings = () => {
       const startTime = Date.now();
       
       // 發送測試請求到後端
-      const response = await fetch('/api/ai-test', {
+      const response = await fetch(`${API_BASE_URL}/api/ai-test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -302,7 +303,7 @@ const AIProviderSettings = () => {
 
   const saveSettings = async () => {
     try {
-      const response = await fetch('/api/settings/ai-provider', {
+      const response = await fetch(`${API_BASE_URL}/api/settings/ai-provider`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
