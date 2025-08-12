@@ -318,7 +318,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   // 驗證文件
   const validateFile = (file) => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 10MB
     const minSize = 1024; // 1KB
     
     if (!file) {
@@ -335,7 +335,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     
     if (file.size > maxSize) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      toast.error(`圖片文件過大 (${sizeMB}MB)，請選擇小於5MB的圖片`, {
+      toast.error(`圖片文件過大 (${sizeMB}MB)，請選擇小於10MB的圖片`, {
         autoClose: 5000
       });
       return false;

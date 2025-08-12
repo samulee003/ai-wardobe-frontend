@@ -192,7 +192,7 @@ class BatchUploadService {
   getUploadLimits() {
     return {
       maxFiles: 10,
-      maxFileSize: 5 * 1024 * 1024, // 5MB
+      maxFileSize: 10 * 1024 * 1024, // 10MB
       allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
       minFileSize: 1024 // 1KB
     };
