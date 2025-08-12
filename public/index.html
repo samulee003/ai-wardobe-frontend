@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#4f46e5" />
-    <meta name="description" content="智能衣櫃管理APP - 幫助ADHD用戶整理衣物和穿搭建議" />
+    <meta name="description" content="智能衣櫃管理APP - AI衣物管理系統" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
@@ -14,8 +14,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="智能衣櫃" />
     
-    <!-- Capacitor優化 -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+    <!-- 安全策略（放寬以支援 blob 圖片預覽、跨網域 API 與 WebSocket） -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval';
+      img-src 'self' data: blob: https: http:;
+      style-src 'self' 'unsafe-inline' https: http:;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:;
+      connect-src 'self' https: http: ws: wss: blob: data:;
+      media-src 'self' blob: data: *;
+      font-src 'self' data: https: http:;
+      frame-src *;
+      worker-src 'self' blob:;
+    ">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     
@@ -78,6 +88,8 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         background-color: #f8fafc;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
       }
       
       code {
@@ -90,6 +102,9 @@
         body {
           font-size: 14px;
         }
+      }
+      @media (max-width: 420px) {
+        body { font-size: 13px; }
       }
     </style>
   </head>
