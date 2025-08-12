@@ -407,32 +407,23 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
   const compressFilesInQueue = async (files) => {
     for (let i = 0; i < files.length; i++) {
       const fileData = files[i];
-
-      // 以 id 查找目前在佇列中的實際索引，避免因為 setState 非同步導致的位移
-      const queueIndex = fileQueue.findIndex(item => item.id === fileData.id);
-
-      if (queueIndex === -1) continue;
-
       try {
-        updateFileInQueue(queueIndex, {
-          status: 'compressing',
-          progress: 10
-        });
+        // 標記為壓縮中（以 id 更新，避免索引失準）
+        setFileQueue(prev => prev.map(item =>
+          item.id === fileData.id ? { ...item, status: 'compressing', progress: 10 } : item
+        ));
 
         const compressedFile = await compressImage(fileData.file);
 
-        updateFileInQueue(queueIndex, {
-          status: 'pending',
-          progress: 100,
-          compressedFile
-        });
-
+        // 壓縮完成，寫回 blob
+        setFileQueue(prev => prev.map(item =>
+          item.id === fileData.id ? { ...item, status: 'pending', progress: 100, compressedFile } : item
+        ));
       } catch (error) {
         console.error(`壓縮 ${fileData.originalName} 失敗:`, error);
-        updateFileInQueue(queueIndex, {
-          status: 'error',
-          error: `壓縮失敗: ${error.message}`
-        });
+        setFileQueue(prev => prev.map(item =>
+          item.id === fileData.id ? { ...item, status: 'error', error: `壓縮失敗: ${error.message}` } : item
+        ));
       }
     }
   };
@@ -506,11 +497,11 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
 
   // 批量上傳並分析
   const handleBatchUpload = async () => {
-    const pendingFiles = fileQueue.filter(item => 
-      item.status === 'pending' && item.compressedFile
-    );
+    // 主要使用已壓縮檔；若壓縮卡住，短期容錯：用原檔上傳避免卡死
+    const pendingFiles = fileQueue.filter(item => (item.status === 'pending' && item.compressedFile));
+    const fallbackCompressing = fileQueue.filter(item => item.status === 'compressing' && item.file);
 
-    if (pendingFiles.length === 0) {
+    if (pendingFiles.length === 0 && fallbackCompressing.length === 0) {
       const compressingCount = fileQueue.filter(item => item.status === 'compressing').length;
       if (compressingCount > 0) {
         toast.info('圖片壓縮中，請稍候再上傳');
@@ -540,9 +531,12 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       });
 
       // 使用統一服務層進行上傳，支援進度回調
-      const compressedFiles = pendingFiles.map(fileData => fileData.compressedFile);
+      const filesToUpload = [
+        ...pendingFiles.map(f => ({ id: f.id, file: f.compressedFile, originalName: f.originalName })),
+        ...fallbackCompressing.map(f => ({ id: f.id, file: f.file, originalName: f.originalName }))
+      ];
       
-      const result = await batchUploadService.uploadBatch(compressedFiles, (progress) => {
+      const result = await batchUploadService.uploadBatch(filesToUpload.map(f => f.file), (progress) => {
         // 更新所有上傳中文件的進度
         pendingFiles.forEach((fileData, index) => {
           const fileIndex = fileQueue.findIndex(item => item.id === fileData.id);
@@ -556,7 +550,8 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
       setUploadResults(result);
 
       // 更新文件狀態
-      await Promise.all(pendingFiles.map(async (fileData) => {
+      const allConsidered = [...pendingFiles, ...fallbackCompressing];
+      await Promise.all(allConsidered.map(async (fileData) => {
         const fileIndex = fileQueue.findIndex(item => item.id === fileData.id);
         const uploadResult = result.results?.find(r => r.filename === fileData.originalName);
         const uploadError = result.errors?.find(e => e.filename === fileData.originalName);

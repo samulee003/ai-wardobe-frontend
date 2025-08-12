@@ -36,8 +36,9 @@ class BatchUploadService {
       
       // 添加文件到FormData
       files.forEach((file, index) => {
-        const fileName = file.name || `image_${index}.jpg`;
-        formData.append('images', file, fileName);
+        const actualFile = file instanceof Blob ? file : (file?.file || file);
+        const fileName = actualFile?.name || `image_${index}.jpg`;
+        formData.append('images', actualFile, fileName);
       });
 
       // 獲取認證token
