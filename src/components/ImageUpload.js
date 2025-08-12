@@ -392,43 +392,46 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
 
     // 添加到佇列
     setFileQueue(prevQueue => [...prevQueue, ...validFiles]);
-    
+
     toast.success(`已添加 ${validFiles.length} 張圖片到上傳佇列`, {
       autoClose: 2000
     });
 
-    // 開始壓縮圖片
-    compressFilesInQueue(validFiles);
+    // 在下一個事件循環開始壓縮，確保狀態已更新
+    setTimeout(() => {
+      compressFilesInQueue(validFiles);
+    }, 0);
   };
 
   // 批量壓縮圖片
   const compressFilesInQueue = async (files) => {
-    // 獲取當前佇列的實際起始索引
-    const startIndex = fileQueue.length - files.length;
-    
     for (let i = 0; i < files.length; i++) {
       const fileData = files[i];
-      const queueIndex = startIndex + i;
+
+      // 以 id 查找目前在佇列中的實際索引，避免因為 setState 非同步導致的位移
+      const queueIndex = fileQueue.findIndex(item => item.id === fileData.id);
+
+      if (queueIndex === -1) continue;
 
       try {
-        updateFileInQueue(queueIndex, { 
-          status: 'compressing', 
-          progress: 10 
+        updateFileInQueue(queueIndex, {
+          status: 'compressing',
+          progress: 10
         });
 
         const compressedFile = await compressImage(fileData.file);
-        
-        updateFileInQueue(queueIndex, { 
-          status: 'pending', 
+
+        updateFileInQueue(queueIndex, {
+          status: 'pending',
           progress: 100,
-          compressedFile: compressedFile
+          compressedFile
         });
 
       } catch (error) {
         console.error(`壓縮 ${fileData.originalName} 失敗:`, error);
-        updateFileInQueue(queueIndex, { 
-          status: 'error', 
-          error: `壓縮失敗: ${error.message}` 
+        updateFileInQueue(queueIndex, {
+          status: 'error',
+          error: `壓縮失敗: ${error.message}`
         });
       }
     }
