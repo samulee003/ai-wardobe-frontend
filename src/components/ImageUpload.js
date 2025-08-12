@@ -511,7 +511,12 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
     );
 
     if (pendingFiles.length === 0) {
-      toast.error('沒有可上傳的文件');
+      const compressingCount = fileQueue.filter(item => item.status === 'compressing').length;
+      if (compressingCount > 0) {
+        toast.info('圖片壓縮中，請稍候再上傳');
+      } else {
+        toast.error('沒有可上傳的文件');
+      }
       return;
     }
 
@@ -789,9 +794,13 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
             <BatchButton
               className="primary"
               onClick={handleBatchUpload}
-              disabled={isUploading || queueStats.pending === 0}
+              disabled={isUploading || (queueStats.pending === 0 && queueStats.compressing > 0)}
             >
-              {isUploading ? '🚀 上傳中...' : `🚀 批量上傳 (${queueStats.pending} 張)`}
+              {isUploading
+                ? '🚀 上傳中...'
+                : (queueStats.compressing > 0
+                    ? `⌛ 壓縮中 (${queueStats.compressing} 張)`
+                    : `🚀 批量上傳 (${queueStats.pending} 張)`) }
             </BatchButton>
             
             <BatchButton
