@@ -243,7 +243,7 @@ const AIProviderSettings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          // 自用模式：不附帶 Authorization
         },
         body: JSON.stringify({
           provider: providerId,
@@ -306,8 +306,7 @@ const AIProviderSettings = () => {
       const response = await fetch(`${API_BASE_URL}/api/settings/ai-provider`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ provider: selectedProvider })
       });

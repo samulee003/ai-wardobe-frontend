@@ -417,8 +417,7 @@ const MobileCameraUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
           // 相似度去重提示
           (async () => {
             try {
-              const token = localStorage.getItem('token');
-              const resp = await fetch(`/api/clothes/${r.clothing._id}/similar`, { headers: { 'Authorization': `Bearer ${token}` } });
+              const resp = await fetch(`/api/clothes/${r.clothing._id}/similar`);
               if (resp.ok) {
                 const data = await resp.json();
                 const top = (data.items || [])[0];

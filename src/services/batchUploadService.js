@@ -41,11 +41,6 @@ class BatchUploadService {
         formData.append('images', actualFile, fileName);
       });
 
-      // 獲取認證token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('用戶未登錄，請先登錄');
-      }
 
       // 發送請求 (使用XMLHttpRequest支援進度監聽)
       const response = await new Promise((resolve, reject) => {
@@ -132,7 +127,7 @@ class BatchUploadService {
         
         const endpoint = baseUrl ? `${baseUrl}/api/clothes/batch-upload` : `${this.baseURL}/batch-upload`;
         xhr.open('POST', endpoint);
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        // 無登入模式：不附帶 Authorization
         xhr.timeout = timeoutMs; // 預設 20 秒超時，可由參數覆蓋
         xhr.send(formData);
       });
@@ -167,16 +162,9 @@ class BatchUploadService {
       const formData = new FormData();
       formData.append('image', file);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('用戶未登錄，請先登錄');
-      }
-
       const response = await fetch(`${this.baseURL}/upload`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: {},
         body: formData,
         signal
       });

@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     logout: () => {},
     updateProfile: async () => ({ success: true }),
     refreshToken: async () => true,
-    isAuthenticated: true
+    isAuthenticated: true // 永遠視為已認證（自用模式）
   };
 
   return (

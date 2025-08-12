@@ -575,10 +575,7 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
           }
 
           try {
-            const token = localStorage.getItem('token');
-            const similarResp = await fetch(`/api/clothes/${uploadResult.clothing._id}/similar`, {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const similarResp = await fetch(`/api/clothes/${uploadResult.clothing._id}/similar`);
             if (similarResp.ok) {
               const similarData = await similarResp.json();
               const top = (similarData.items || [])[0];
