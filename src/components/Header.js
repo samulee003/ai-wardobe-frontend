@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -116,14 +116,9 @@ const LoginButton = styled(Link)`
 `;
 
 const Header = () => {
-  const { user, logout, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -183,22 +178,7 @@ const Header = () => {
           </Nav>
         )}
 
-        <UserSection>
-          {isAuthenticated ? (
-            <>
-              <UserName>
-                👋 {user?.name || '用戶'}
-              </UserName>
-              <LogoutButton onClick={handleLogout}>
-                登出
-              </LogoutButton>
-            </>
-          ) : (
-            <LoginButton to="/login">
-              登錄
-            </LoginButton>
-          )}
-        </UserSection>
+        {/* 移除訪客/登入區塊（僅自用，不顯示帳號與登出） */}
       </HeaderContent>
     </HeaderContainer>
   );

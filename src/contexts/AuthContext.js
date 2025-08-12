@@ -12,24 +12,18 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user] = useState({ id: 'guest', name: '訪客' });
-  const [loading, setLoading] = useState(true);
-  const [token] = useState(localStorage.getItem('token'));
+  // 自用模式：關閉登入機制
+  const [user] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [token] = useState(null);
 
   // 設置axios默認headers
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
+    delete axios.defaults.headers.common['Authorization'];
+  }, []);
 
   // 檢查用戶登錄狀態
-  useEffect(() => {
-    // 離線/無認證模式：直接完成載入
-    setLoading(false);
-  }, [token]);
+  useEffect(() => {}, []);
 
   // 移除真實登入/註冊/更新/刷新函數，避免未使用警告
 
