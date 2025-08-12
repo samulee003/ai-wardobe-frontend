@@ -11,44 +11,7 @@ export const ErrorTypes = {
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 };
 
-// ADHD 友好的錯誤消息
-const ADHDFriendlyMessages = {
-  [ErrorTypes.NETWORK_ERROR]: {
-    title: '網絡連接問題',
-    message: '網絡似乎有點問題，請檢查網絡連接後重試',
-    action: '重試'
-  },
-  [ErrorTypes.API_ERROR]: {
-    title: '服務暫時不可用',
-    message: '服務器正在休息，請稍後再試',
-    action: '稍後重試'
-  },
-  [ErrorTypes.VALIDATION_ERROR]: {
-    title: '輸入信息需要調整',
-    message: '請檢查輸入的信息是否正確',
-    action: '檢查輸入'
-  },
-  [ErrorTypes.AUTH_ERROR]: {
-    title: '需要重新登錄',
-    message: '登錄狀態已過期，請重新登錄',
-    action: '重新登錄'
-  },
-  [ErrorTypes.FILE_ERROR]: {
-    title: '文件處理問題',
-    message: '文件可能太大或格式不支持，請嘗試其他文件',
-    action: '選擇其他文件'
-  },
-  [ErrorTypes.AI_SERVICE_ERROR]: {
-    title: 'AI 服務暫時不可用',
-    message: 'AI 正在學習中，請稍後再試',
-    action: '稍後重試'
-  },
-  [ErrorTypes.UNKNOWN_ERROR]: {
-    title: '出現了意外問題',
-    message: '別擔心，這不是你的錯，請嘗試刷新頁面',
-    action: '刷新頁面'
-  }
-};
+// 移除 ADHD 模式分支，統一使用標準錯誤消息
 
 // 標準錯誤消息
 const StandardMessages = {
@@ -120,10 +83,8 @@ class ErrorHandler {
     // 確定錯誤類型
     const errorType = this.determineErrorType(error, type);
 
-    // 獲取適當的錯誤消息
-    const isADHDMode = document.body.classList.contains('simplified-mode');
-    const messages = isADHDMode ? ADHDFriendlyMessages : StandardMessages;
-    const errorMessage = messages[errorType] || messages[ErrorTypes.UNKNOWN_ERROR];
+    // 獲取適當的錯誤消息（單一路徑）
+    const errorMessage = StandardMessages[errorType] || StandardMessages[ErrorTypes.UNKNOWN_ERROR];
 
     // 顯示用戶友好的錯誤消息
     this.showUserMessage(errorMessage, errorType);

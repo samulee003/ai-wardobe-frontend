@@ -13,7 +13,6 @@ class OfflineStorageService {
         outfits: [],
         user: null,
         settings: {
-          adhdMode: false,
           theme: 'light'
         }
       };
@@ -24,7 +23,6 @@ class OfflineStorageService {
         outfits: [],
         user: null,
         settings: {
-          adhdMode: false,
           theme: 'light'
         }
       };
@@ -141,7 +139,6 @@ class OfflineStorageService {
       outfits: [],
       user: null,
       settings: {
-        adhdMode: false,
         theme: 'light'
       }
     };

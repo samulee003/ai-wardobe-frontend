@@ -18,7 +18,6 @@ import ItemCategory from './pages/ItemCategory';
 import OutfitCategory from './pages/OutfitCategory';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import ADHDModeToggle from './components/ADHDModeToggle';
 import SyncStatus from './components/SyncStatus';
 import ToastProvider from './components/Toast';
 import UpdateNotification from './components/UpdateNotification';
@@ -68,7 +67,6 @@ function App() {
             </Routes>
           </main>
           {!usesMobileShell && <FAB onClick={() => window.location.assign('/upload')} />}
-          <ADHDModeToggle />
           <SyncStatus />
           <UpdateNotification />
         </ErrorBoundary>

@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import ImageUpload from '../components/ImageUpload';
+import localStorageService from '../services/localStorageService';
 import { useAuth } from '../contexts/AuthContext';
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px;
+  @media (max-width: 768px) {
+    padding: 12px 12px 24px 12px;
+  }
 `;
 
 const Title = styled.h1`
@@ -26,21 +30,26 @@ const Subtitle = styled.p`
 
 const StepIndicator = styled.div`
   display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
 `;
 
 const Step = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 20px;
   background: ${props => props.active ? 'var(--color-primary)' : '#f8f9fa'};
   color: ${props => props.active ? 'white' : '#666'};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  @media (max-width: 768px) {
+    flex: 1 1 calc(33% - 8px);
+    justify-content: center;
+  }
 `;
 
 const ConfirmationSection = styled.div`
@@ -49,6 +58,9 @@ const ConfirmationSection = styled.div`
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  @media (max-width: 768px) {
+    padding: 14px;
+  }
 `;
 
 const ConfirmationTitle = styled.h3`
@@ -61,12 +73,18 @@ const EditableField = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
 `;
 
 const FieldLabel = styled.label`
   font-weight: 600;
   color: #333;
   min-width: 80px;
+  @media (max-width: 768px) { min-width: 0; }
 `;
 
 const FieldInput = styled.input`
@@ -75,6 +93,7 @@ const FieldInput = styled.input`
   border-radius: 6px;
   font-size: 14px;
   flex: 1;
+  min-height: 40px;
   
   &:focus {
     outline: none;
@@ -88,6 +107,7 @@ const FieldSelect = styled.select`
   border-radius: 6px;
   font-size: 14px;
   flex: 1;
+  min-height: 40px;
   
   &:focus {
     outline: none;
@@ -111,19 +131,23 @@ const ColorTag = styled.span`
 
 const ActionButtons = styled.div`
   display: flex;
-  gap: 15px;
-  justify-content: center;
+  gap: 10px;
+  justify-content: space-between;
   margin-top: 20px;
+  flex-wrap: wrap;
 `;
 
 const Button = styled.button`
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex: 1 1 calc(33% - 10px);
+  min-height: 44px;
+  @media (min-width: 769px) { flex: 0 0 auto; }
   
   &.primary {
     background: #28a745;
@@ -169,6 +193,8 @@ const Upload = () => {
 
   const handleUploadSuccess = (clothing) => {
     setUploadedClothing(clothing);
+    // 純本地模式：立即保存到 IndexedDB，避免未連線時丟失
+    try { localStorageService.addClothing(clothing); } catch (_) {}
     setCurrentStep(2);
   };
 

@@ -20,12 +20,19 @@ const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
     color: var(--color-text-primary);
-    background: ${tokens.colors.surfaceAlt};
+    background: linear-gradient(180deg, ${tokens.colors.surfaceAlt} 0%, #FFFFFF 60%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   button { font-family: inherit; }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: ${tokens.radius.lg}px;
+    box-shadow: ${tokens.shadow.sm};
+  }
 `;
 
 export default GlobalStyle;

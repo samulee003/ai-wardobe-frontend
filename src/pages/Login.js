@@ -97,23 +97,7 @@ const Tab = styled.button`
   }
 `;
 
-const CheckboxGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-`;
-
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-`;
-
-const CheckboxLabel = styled.label`
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-`;
+// 已移除 ADHD 勾選相關樣式元件
 
 const LinkText = styled.p`
   text-align: center;
@@ -137,8 +121,7 @@ const Login = () => {
     email: '',
     password: '',
     name: '',
-    age: '',
-    adhd: false
+    age: ''
   });
 
   // 無認證模式：不需要從 AuthContext 取任何函數
@@ -241,18 +224,7 @@ const Login = () => {
               />
             </FormGroup>
 
-            <CheckboxGroup>
-              <Checkbox
-                type="checkbox"
-                id="adhd"
-                name="adhd"
-                checked={formData.adhd}
-                onChange={handleChange}
-              />
-              <CheckboxLabel htmlFor="adhd">
-                我有ADHD，希望使用簡化界面
-              </CheckboxLabel>
-            </CheckboxGroup>
+            {/* 已移除 ADHD/簡化界面選項 */}
           </>
         )}
 

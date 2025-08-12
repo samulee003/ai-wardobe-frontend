@@ -536,7 +536,8 @@ const ImageUpload = ({ onUploadSuccess, onAnalysisComplete }) => {
         ...fallbackCompressing.map(f => ({ id: f.id, file: f.file, originalName: f.originalName }))
       ];
       
-      const result = await batchUploadService.uploadBatch(filesToUpload.map(f => f.file), (progress) => {
+      // 傳遞完整的文件物件以保留 originalName，用於對應後端回應
+      const result = await batchUploadService.uploadBatch(filesToUpload, (progress) => {
         // 更新所有上傳中文件的進度
         pendingFiles.forEach((fileData, index) => {
           const fileIndex = fileQueue.findIndex(item => item.id === fileData.id);

@@ -371,10 +371,7 @@ const MobileUpload = () => {
                  • 確保衣物完整出現在畫面中</p>
             </HelpSection>
             
-            <HelpSection>
-              <HelpSectionTitle>🧠 ADHD友好設計</HelpSectionTitle>
-              <p>界面簡潔明了，大按鈕設計，清晰的視覺反饋，減少認知負荷，讓您專注於衣物管理。</p>
-            </HelpSection>
+            {/* 已移除 ADHD/簡化設計段落 */}
             
             <HelpSection>
               <HelpSectionTitle>🔄 離線支持</HelpSectionTitle>

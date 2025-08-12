@@ -173,24 +173,14 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       const { error, errorInfo, errorId } = this.state;
-      const isADHDMode = document.body.classList.contains('simplified-mode');
 
       return (
         <ErrorContainer>
           <ErrorIcon>😵</ErrorIcon>
           <ErrorTitle>哎呀！出現了一些問題</ErrorTitle>
           <ErrorMessage>
-            {isADHDMode ? (
-              <>
-                應用遇到了意外錯誤，但別擔心，這不是你的問題。<br/>
-                你可以嘗試重新載入頁面，或者回到首頁重新開始。
-              </>
-            ) : (
-              <>
-                應用程序遇到了意外錯誤。我們已經記錄了這個問題，<br/>
-                開發團隊會盡快修復。你可以嘗試以下操作：
-              </>
-            )}
+            應用程序遇到了意外錯誤。我們已經記錄了這個問題，<br/>
+            開發團隊會盡快修復。你可以嘗試以下操作：
           </ErrorMessage>
 
           <ActionButtons>
@@ -205,7 +195,7 @@ class ErrorBoundary extends React.Component {
             </Button>
           </ActionButtons>
 
-          {!isADHDMode && error && (
+          {error && (
             <ErrorDetails>
               <summary>技術詳情 (錯誤ID: {errorId})</summary>
               <div>

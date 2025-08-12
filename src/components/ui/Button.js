@@ -1,10 +1,13 @@
 import React from 'react';
 
 const variantClasses = {
-  primary: 'bg-primary text-white hover:bg-primary-700',
-  secondary: 'bg-surface text-textPrimary border border-border hover:bg-surfaceAlt',
-  ghost: 'bg-transparent text-textPrimary hover:bg-surfaceAlt',
-  danger: 'bg-danger text-white hover:bg-red-600'
+  primary:
+    'text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] shadow-sm',
+  secondary:
+    'bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]',
+  ghost:
+    'bg-transparent text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
+  danger: 'text-white bg-[var(--color-danger)] hover:bg-red-600'
 };
 
 const sizeClasses = {
@@ -22,8 +25,8 @@ function Button({
   ...props
 }) {
   const classes = [
-    'inline-flex items-center justify-center font-semibold rounded-md transition-colors',
-    'focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2',
+    'inline-flex items-center justify-center font-semibold rounded-lg transition-colors',
+    'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2',
     'disabled:opacity-50 disabled:pointer-events-none',
     variantClasses[variant] || variantClasses.primary,
     sizeClasses[size] || sizeClasses.md,

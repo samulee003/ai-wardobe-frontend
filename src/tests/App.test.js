@@ -11,7 +11,4 @@ test('navigation works correctly', () => {
   expect(true).toBe(true);
 });
 
-test('ADHD mode toggle works', () => {
-  // ADHD模式測試
-  expect(true).toBe(true);
-});
+// 已移除 ADHD 模式相關測試

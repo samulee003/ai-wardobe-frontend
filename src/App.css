@@ -1,4 +1,4 @@
-/* ADHD友好的全局樣式 */
+/* 全局樣式 */
 
 * {
   box-sizing: border-box;
@@ -16,7 +16,7 @@ body {
   line-height: 1.6;
 }
 
-/* ADHD友好設計原則 */
+/* 設計原則 */
 
 /* 1. 大字體，易於閱讀 */
 .App {
@@ -121,20 +121,7 @@ button,
   100% { transform: rotate(360deg); }
 }
 
-/* 9. 簡化模式 */
-.simplified-mode {
-  font-size: 18px;
-}
-
-.simplified-mode .advanced-feature {
-  display: none;
-}
-
-.simplified-mode button {
-  font-size: 18px;
-  padding: 16px 24px;
-  margin: 8px;
-}
+/* 移除簡化模式樣式 */
 
 /* 10. 響應式設計 */
 @media (max-width: 768px) {
