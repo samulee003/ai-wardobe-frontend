@@ -153,13 +153,20 @@ const Button = styled.button`
   }
 `;
 
-// 精簡為 KIMI + 本地分析
+// 精簡為 KIMI + 智譜 + 本地分析
 const providers = [
   {
     id: 'kimi',
     name: 'KIMI (Moonshot) Vision',
     description: '主力供應商：穩定、快速的圖像理解',
     icon: '🌙',
+    requiresKey: true
+  },
+  {
+    id: 'zhipu',
+    name: '智譜清言 GLM-4.5V',
+    description: '高精度視覺推理，支援複雜場景分析',
+    icon: '🧠',
     requiresKey: true
   },
   {
