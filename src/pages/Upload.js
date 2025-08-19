@@ -219,30 +219,63 @@ const Upload = () => {
   };
 
   const handleConfirm = async () => {
-    if (!uploadedClothing) return;
+    if (!uploadedClothing || !isAuthenticated) return; // 確保已登錄
 
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/clothes/${uploadedClothing._id}`, {
-        method: 'PUT',
+      if (!token) {
+        toast.error('未檢測到登錄憑證，請重新登錄。');
+        navigate('/login');
+        return;
+      }
+
+      let response;
+      let url;
+      let method;
+      let requestBody = { ...editedData }; // 複製 editedData 以添加額外屬性
+
+
+      if (uploadedClothing._id) {
+        // 如果有 _id，表示是更新現有衣物
+        url = `/api/clothes/${uploadedClothing._id}`;
+        method = 'PUT';
+      } else if (uploadedClothing.imageUrl) {
+        // 如果沒有 _id 但有 imageUrl，表示是首次保存，需要 POST
+        url = `/api/clothes/upload`;
+        method = 'POST';
+        // 首次上傳時，將 imageUrl 添加到請求體中
+        requestBody.imageUrl = uploadedClothing.imageUrl;
+      } else {
+        throw new Error('衣物資料不完整，無法保存。');
+      }
+
+      response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editedData)
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
-        throw new Error('保存失敗');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '保存失敗');
       }
 
+      const result = await response.json();
+      // 如果是 POST 成功，則從響應中獲取完整的衣物資料，以便後續更新或導航
+      if (method === 'POST') {
+        setUploadedClothing(result.clothing); // 更新 uploadedClothing 包含伺服器生成的 _id
+      }
+      
       toast.success('衣物信息已保存！');
       navigate('/wardrobe');
       
     } catch (error) {
       console.error('保存錯誤:', error);
-      toast.error('保存失敗，請重試');
+      toast.error(`保存失敗：${error.message || '未知錯誤'}`);
     } finally {
       setSaving(false);
     }
