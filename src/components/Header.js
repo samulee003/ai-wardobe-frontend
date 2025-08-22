@@ -158,6 +158,12 @@ const Header = () => {
               ✨ 穿搭
             </NavLink>
             <NavLink 
+              to="/outfits/analyze" 
+              className={isActive('/outfits/analyze') ? 'active' : ''}
+            >
+              🧍 穿搭分析
+            </NavLink>
+            <NavLink 
               to="/statistics" 
               className={isActive('/statistics') ? 'active' : ''}
             >

@@ -181,6 +181,7 @@ const Home = () => {
     { path: '/upload', icon: '📷', title: '拍照上傳', desc: '添加新的衣物到衣櫃' },
     { path: '/wardrobe', icon: '👔', title: '我的衣櫃', desc: '瀏覽和管理衣物' },
     { path: '/outfits', icon: '✨', title: '穿搭建議', desc: 'AI智能搭配推薦' },
+    { path: '/outfits/analyze', icon: '🧍', title: '穿搭分析', desc: '上傳當下整套穿搭，獲得風格分析' },
     { path: '/statistics', icon: '📊', title: '統計分析', desc: '查看穿著數據' },
     { path: '/declutter', icon: '🗑️', title: '整理建議', desc: '淘汰不需要的衣物' }
   ];
