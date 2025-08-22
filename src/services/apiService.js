@@ -148,6 +148,34 @@ class ApiService {
     }
   }
 
+  // 整套穿搭分析（上傳單張照片）
+  async analyzeOutfit(imageBase64) {
+    if (this.isOffline) {
+      // 離線模式回傳降級結果（與後端 fallback 對齊鍵名）
+      return {
+        data: {
+          message: '離線模式：提供基本回應',
+          analysis: {
+            outfitStyle: '簡約',
+            styleConfidence: 0.3,
+            items: [],
+            globalColors: ['黑色', '白色'],
+            season: ['春', '秋'],
+            occasion: '日常',
+            suggestions: ['離線模式無法進行雲端分析']
+          }
+        }
+      };
+    }
+
+    try {
+      return await this.api.post('/api/outfits/analyze', { imageBase64 });
+    } catch (error) {
+      // 保留錯誤以便上層 UI 呈現
+      throw error;
+    }
+  }
+
   generateOfflineRecommendations(clothes) {
     // 簡單的離線推薦邏輯
     const categories = ['上衣', '下裝', '外套', '鞋子'];

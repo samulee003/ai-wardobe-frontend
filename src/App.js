@@ -16,6 +16,7 @@ import Declutter from './pages/Declutter';
 import Items from './pages/Items';
 import ItemCategory from './pages/ItemCategory';
 import OutfitCategory from './pages/OutfitCategory';
+import OutfitAnalysis from './pages/OutfitAnalysis';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import SyncStatus from './components/SyncStatus';
@@ -60,6 +61,7 @@ function App() {
               <Route path="/items" element={<Items />} />
               <Route path="/items/:category" element={<ItemCategory />} />
               <Route path="/outfits" element={<Outfits />} />
+              <Route path="/outfits/analyze" element={<OutfitAnalysis />} />
               <Route path="/outfits/:category" element={<OutfitCategory />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/settings" element={<Settings />} />
